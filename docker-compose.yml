@@ -1,0 +1,15 @@
+version: '3.7'
+
+services:
+  mongo:
+    image: mongo
+    container_name: MONGO-DOCK
+    ports:
+      - "27017:27017"
+
+  react-app:
+    build: .
+    ports:
+      - "3000:3000"
+    depends_on:
+      - mongo
