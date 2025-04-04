@@ -11,6 +11,8 @@
   },
   "dependencies": {
     "@ionic/react": "^8.5.3",
+    "axios": "^1.8.4",
+    "dotenv": "^16.4.7",
     "ionicons": "^7.4.0",
     "react": "^19.0.0",
     "react-dom": "^19.0.0",
@@ -18,6 +20,7 @@
   },
   "devDependencies": {
     "@eslint/js": "^9.21.0",
+    "@types/node": "^22.14.0",
     "@types/react": "^19.0.10",
     "@types/react-dom": "^19.0.4",
     "@vitejs/plugin-react-swc": "^3.8.0",
