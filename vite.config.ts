@@ -12,7 +12,11 @@ export default defineConfig({
     }
   },
   server: {
+    host: true,      // permite acceso desde fuera del contenedor
     port: 3000,
-    host: '0.0.0.0',
+    strictPort: true,
+    watch: {
+      usePolling: true // 🔥 necesario para que funcione hot reload con archivos montados desde Windows
+    }
   },
 })
