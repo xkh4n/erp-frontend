@@ -1,10 +1,12 @@
-import { BrowserRouter, Routes, Route } from "react-router-dom";
+import { BrowserRouter, Routes, Route, useLocation } from "react-router-dom";
 import Home from "../Views/Home";
 import Contacto from "../Views/Contacto";
 import Registro from "../Views/Registro";
 import Login from "../Views/Login";
 import MainLayout from "../Layout/MainLayout";
 import LoginLayout from "../Layout/LoginLayout";
+import ErrorPage from "../Views/Errors/ErrorPage";
+import BajaProducto from "../Views/Reciclaje/BajaProducto";
 
 export default function index() {
     return (
@@ -12,13 +14,21 @@ export default function index() {
             <Routes>
                 <Route element={<MainLayout />}>
                     <Route path="/" element={<Home />} />
+                    <Route path="/devolucion" element={<BajaProducto />} />
                     <Route path="/contacto" element={<Contacto />} />
                     <Route path="/registro" element={<Registro />} />
                 </Route>
                 <Route element={<LoginLayout />}>
                     <Route path="/login" element={<Login />} />
                 </Route>
+                <Route path="/error" element={<ErrorPageWrapper />} />
             </Routes>
         </BrowserRouter>
     )
 }
+const ErrorPageWrapper = () => {
+    const location = useLocation();
+    const { code, message, detail } = location.state || {};
+  
+    return <ErrorPage code={code} message={message} detail={detail} />;
+};

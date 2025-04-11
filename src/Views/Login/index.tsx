@@ -2,7 +2,9 @@ import { Link } from 'react-router-dom'
 import { logInOutline } from 'ionicons/icons'
 import { IonIcon } from '@ionic/react'
 import { IsEmail, IsPassword} from '../../Library/Validations'
+import { CustomError } from '../../Library/Errores';
 import { useState } from 'react'
+import { useNavigate } from 'react-router-dom';
 import {TextBox} from '../../Components/Input'
 import axios from 'axios'
 
@@ -11,10 +13,15 @@ import './Login.css'
 
 
 export default function Index() {
+    const navigate = useNavigate();
     const [email, setEmail] = useState('')
     const [password, setPassword] = useState('')
     const [emailError, setEmailError] = useState(false)
     const [passwordError, setPasswordError] = useState(false)
+
+    const [errorCode, setErrorCode] = useState(0);
+    const [errorMessage, setErrorMessage] = useState('');
+    const [errorDetails, setErrorDetails] = useState('');
     //Función para validar el formulario y enviar los datos al servidor
     const handlerSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
         e.preventDefault()
@@ -39,12 +46,28 @@ export default function Index() {
             }
             
         } catch (error) {
-            if (axios.isAxiosError(error)) {
-                // Manejar errores específicos de la API
-                console.error('Error de login:', error.response?.data?.message)
-            } else {
-                // Manejar errores inesperados
-                console.error('Error inesperado:', error)
+            if(error instanceof CustomError){
+                const errorData = error.toJSON();
+                navigate('/error', {
+                    state: {
+                        code: errorData.code,
+                        message: errorData.message,
+                        detail: errorData.details
+                    }
+                });
+                setErrorCode(errorData.code);
+                setErrorMessage(errorData.message);
+                setErrorDetails(errorData.details);
+            }
+            if(error instanceof axios.AxiosError){
+                navigate('/error', {
+                    state: {
+                        code: error.response?.status || 500,
+                        message: error.message || 'Network Error',
+                        detail: error.response?.statusText || 'Unknown error'
+                    }
+                });
+                console.log(error.response);
             }
         }
     }
