@@ -18,13 +18,13 @@ export default function index() {
                         <li className="md:px-4 md:py-2 text-red-600"><Link to="/">Home</Link></li>
                         <div className="group inline-block mt-2">
                             <button className="outline-none focus:outline-none border rounded-sm flex items-center min-w-32">
-                                <span className="pr-1 font-semibold flex-1 text-blue-900 hover:text-red-600">Reciclaje</span>
+                                <span className="pr-1 font-semibold flex-1 text-blue-900 rounded-full hover:rounded-full hover:bg-blue-950 hover:p-1 hover:text-red-600 hover:shadow-blue-800/50 transition delay-10 duration-300 ease-in-out">Reciclaje</span>
                                 <span><IonIcon icon={chevronDownOutline} className="w-4 h-4" /></span>
                             </button>
-                            <ul className="bg-white border rounded-sm transform scale-0 group-hover:scale-100 absolute transition duration-150 ease-in-out origin-top min-w-32">
-                                <li className="rounded-sm px-3 py-1 hover:bg-gray-100 text-blue-900 hover:text-red-600">Ingreso Certificado</li>
-                                <li className="rounded-sm px-3 py-1 hover:bg-gray-100 text-blue-900 hover:text-red-600"><Link to="/devolucion">Devolucion</Link>    </li>
-                                <li className="rounded-sm relative px-3 py-1 hover:bg-gray-100">
+                            <ul className="rounded-sm transform scale-0 group-hover:scale-100 absolute transition duration-150 ease-in-out origin-top min-w-32">
+                                <li className="px-3 py-1 mt-2 bg-red-600 text-blue-900 rounded-full hover:bg-blue-950  hover:shadow-blue-800/50 transition delay-10 duration-300 ease-in-out hover:translate-y-1 hover:text-white">Ingreso Certificado</li>
+                                <li className="px-3 py-1 mt-2 bg-red-600 text-blue-900 rounded-full hover:bg-blue-950  hover:shadow-blue-800/50 transition delay-10 duration-300 ease-in-out hover:translate-y-1 hover:text-white"><Link to="/devolucion">Devolucion</Link>    </li>
+                                <li className="px-3 py-1 mt-2 bg-red-600 text-blue-900 rounded-full hover:bg-blue-950  hover:shadow-blue-800/50 transition delay-10 duration-300 ease-in-out hover:translate-y-1 hover:text-white">
                                     <button className="w-full text-left flex items-center outline-none focus:outline-none">
                                         <span className="pr-1 flex-1 text-blue-900 hover:text-red-600">Inventario</span>
                                         <span className="mr-auto">
