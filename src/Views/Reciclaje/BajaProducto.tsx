@@ -19,7 +19,7 @@ export default function BajaProducto() {
                 <div className="bg-white px-4 py-8 rounded-xl w-screen shadow-md max-w-sm">
                     <div className="space-y-4">
                         <h1 className="text-center text-2xl font-semibold text-blue-950">Reciclaje de Artículos TI</h1>
-                        <div className='flex-col'>
+                        <div className='flex'>
                             <TextBox
                                     label="Producto"
                                     type="text"
