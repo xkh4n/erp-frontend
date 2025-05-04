@@ -1,12 +1,84 @@
 import { Link } from "react-router-dom";
-import { chevronDownOutline, chevronForwardOutline } from 'ionicons/icons';
+import { chevronDownOutline } from 'ionicons/icons';
 import { IonIcon } from '@ionic/react';
 import './index.css';
 
+type MenuItem = {
+    label: string;
+    link: string;
+    menuItems?: MenuItem[];
+};
+
 export default function index() {
-    const menuItems = [
-        { label: 'Home', link: '/', menuItems:[] },
-    ]
+    
+    const menuItems: MenuItem[] = [
+        { label: 'Home', link: '/' },
+        { label: 'Reciclaje', link: '/reciclaje'},
+        { label: 'Sistemas', link: '#', menuItems: [
+            { label: 'Desarrollo', link: '#' },
+            { label: 'Presupuesto', link: '#' },
+            { label: 'Produccion', link: '#', menuItems:[
+                { label: 'Centralizado', link: '/centralizado', menuItems: [
+                    { label: 'Solicitudes', link: '/solicitudes', menuItems: [
+                        { label: 'Crear Solicitud', link: '/crearsolicitud' },
+                        { label: 'Revisar Solicitud', link: '/revisarsolicitud' },
+                        { label: 'Finalizar Solicitud', link: '/finalizarsolicitud' },
+                    ] },
+                    { label: 'Cuentas NT', link: '/cuentasnt', menuItems: [
+                        { label: 'Crear Cuenta', link: '/crearcuentasnt'},
+                        { label: 'Desbloquear Cuenta', link: '/desbloquearcuentasnt' },
+                        { label: 'Suspender Cuenta', link: '/suspendercuentasnt'},
+                    ] },
+                    { label: 'Cuentas Correo', link: '/cuentascorreo', menuItems: [
+                        { label: 'Crear Cuenta', link: '/crearcuentascorreo' },
+                        { label: 'Desbloquear Cuenta', link: '/desbloquearcuentascorreo' },
+                        { label: 'Suspender Cuenta', link: '/suspendercuentascorreo'},
+                    ] },
+                ] },
+                { label: 'Funcional', link: '#' , menuItems: [
+                    {label: 'Pantalla', link: '#', menuItems: [
+                        { label: 'Crear Pantalla', link: '/crearpantalla' },
+                        { label: 'Revisar Pantalla', link: '/revisarpantalla' },
+                        { label: 'Finalizar Pantalla', link: '/finalizarpantalla' },
+                        { label: 'Asignar Pantalla', link: '/asignarpantalla' },
+                    ]},
+                ]},
+                { label: 'Adquisiciones', link: '/adquisiciones', menuItems:[
+                    { label: 'Ingresos', link: '/ingresos' },
+                    { label: 'Proveedores', link: '/proveedores', menuItems: [
+                        { label: 'Crear Proveedor', link: '/crear_proveedor', menuItems: [] },
+                        { label: 'Consultar Proveedor', link: '/consultar_proveedor', menuItems: [] },
+                    ]},
+                    { label: 'Productos', link: '/productos', menuItems: [
+                        { label: 'Crear Producto', link: '/crear_producto', menuItems: [] },
+                        { label: 'Consultar Producto', link: '/consultar_producto', menuItems: [] },
+                    ]}
+                ] }
+            ] },
+        ]},
+        { label: 'Contacto', link: '/contacto'},
+        { label: 'Registro', link: '/registro'},
+    ];
+    const renderMenuItems = (items: MenuItem[]) => {
+        return items.map((item, index) => (
+            <li key={index} className="ml-2 px-3 py-1 mt-2 bg-red-600 text-blue-900 rounded-full hover:bg-blue-950  hover:shadow-blue-800/50 transition delay-10 duration-300 ease-in-out hover:translate-y-1 hover:text-white">
+                <Link to={item.link} className="flex items-center gap-2">
+                    <button className=" outline-none focus:outline-none rounded-sm flex items-center min-w-32">
+                        <span className="pr-1 font-semibold flex-1 text-blue-900 rounded-full hover:rounded-full hover:bg-blue-950 hover:p-1 hover:text-red-600 hover:shadow-blue-800/50 transition delay-10 duration-300 ease-in-out">{item.label}</span>
+                        {item.menuItems && item.menuItems.length > 0 && (
+                            <span><IonIcon icon={chevronDownOutline} className="w-4 h-4 text-gray-500" /></span>                        
+                        )}
+                    </button>
+                </Link>
+                {item.menuItems && item.menuItems.length > 0 && (
+                    <ul className="bg-white border rounded-sm absolute top-0 right-0 transition duration-150 ease-in-out origin-top-left min-w-32">
+                        {renderMenuItems(item.menuItems)}
+                    </ul>
+                )}
+            </li>
+        ));
+    };
+
     return (
         <nav className="bg-gray-200 shadow shadow-gray-300 w-100 px-8 md:px-auto">
             <div className="md:h-16 h-28 mx-auto md:px-4 container flex items-center justify-between flex-wrap md:flex-nowrap">
@@ -18,42 +90,7 @@ export default function index() {
                 </div>
                 <div className="text-gray-500 order-3 w-full md:w-auto md:order-2">
                     <ul className="flex font-semibold justify-between">
-                        <li className="md:px-4 md:py-2 text-red-600"><Link to="/">Home</Link></li>
-                        <div className="group inline-block mt-2">
-                            <button className="outline-none focus:outline-none border rounded-sm flex items-center min-w-32">
-                                <span className="pr-1 font-semibold flex-1 text-blue-900 rounded-full hover:rounded-full hover:bg-blue-950 hover:p-1 hover:text-red-600 hover:shadow-blue-800/50 transition delay-10 duration-300 ease-in-out">Reciclaje</span>
-                                <span><IonIcon icon={chevronDownOutline} className="w-4 h-4" /></span>
-                            </button>
-                            <ul className="rounded-sm transform scale-0 group-hover:scale-100 absolute transition duration-150 ease-in-out origin-top min-w-32">
-                                <li className="px-3 py-1 mt-2 bg-red-600 text-blue-900 rounded-full hover:bg-blue-950  hover:shadow-blue-800/50 transition delay-10 duration-300 ease-in-out hover:translate-y-1 hover:text-white">Ingreso Certificado</li>
-                                <li className="px-3 py-1 mt-2 bg-red-600 text-blue-900 rounded-full hover:bg-blue-950  hover:shadow-blue-800/50 transition delay-10 duration-300 ease-in-out hover:translate-y-1 hover:text-white"><Link to="/devolucion">Devolucion</Link>    </li>
-                                <li className="px-3 py-1 mt-2 bg-red-600 text-blue-900 rounded-full hover:bg-blue-950  hover:shadow-blue-800/50 transition delay-10 duration-300 ease-in-out hover:translate-y-1 hover:text-white">
-                                    <button className="w-full text-left flex items-center outline-none focus:outline-none">
-                                        <span className="pr-1 flex-1 text-blue-900 hover:text-red-600">Inventario</span>
-                                        <span className="mr-auto">
-                                            <IonIcon icon={chevronForwardOutline} className="w-4 h-4" />
-                                        </span>
-                                    </button>
-                                    <ul className="bg-white border rounded-sm absolute top-0 right-0 transition duration-150 ease-in-out origin-top-left min-w-32">
-                                        <li className="px-3 py-1 hover:bg-gray-100 text-blue-900 hover:text-red-600">Tienda</li>
-                                        <li className="rounded-sm relative px-3 py-1 hover:bg-gray-100">
-                                            <button className="w-full text-left flex items-center outline-none focus:outline-none">
-                                                <span className="pr-1 flex-1 text-blue-900 hover:text-red-600">Toma Inventario</span>
-                                                <span className="mr-auto">
-                                                    <IonIcon icon={chevronForwardOutline} className="w-4 h-4" />
-                                                </span>
-                                            </button>
-                                            <ul className="bg-white border rounded-sm absolute top-0 right-0 transition duration-150 ease-in-out origin-top-left min-w-32">
-                                                <li className="px-3 py-1 hover:bg-gray-100 text-blue-900 hover:text-red-600">Parcial</li>
-                                                <li className="px-3 py-1 hover:bg-gray-100 text-blue-900 hover:text-red-600">Completo</li>
-                                            </ul>
-                                        </li>
-                                    </ul>
-                                </li>
-                            </ul>
-                        </div>
-                        <li className="md:px-4 md:py-2 text-blue-900 hover:text-red-600"><Link to="/contacto">Contacto</Link></li>
-                        <li className="md:px-4 md:py-2 text-blue-900 hover:text-red-600"><Link to="/registro">Registro</Link></li>
+                        {renderMenuItems(menuItems)}
                     </ul>
                 </div>
                 <div className="order-2 md:order-3">
@@ -68,5 +105,5 @@ export default function index() {
                 </div>
             </div>
         </nav>
-    )
+    );
 }

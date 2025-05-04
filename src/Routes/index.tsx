@@ -7,6 +7,7 @@ import MainLayout from "../Layout/MainLayout";
 import LoginLayout from "../Layout/LoginLayout";
 import ErrorPage from "../Views/Errors/ErrorPage";
 import BajaProducto from "../Views/Reciclaje/BajaProducto";
+import AsignarPantalla from "../Views/Funcional/Pantallas/Asignar";
 
 export default function index() {
     return (
@@ -17,6 +18,7 @@ export default function index() {
                     <Route path="/devolucion" element={<BajaProducto />} />
                     <Route path="/contacto" element={<Contacto />} />
                     <Route path="/registro" element={<Registro />} />
+                    <Route path="/asignarpantalla" element={<AsignarPantalla />} />
                 </Route>
                 <Route element={<LoginLayout />}>
                     <Route path="/login" element={<Login />} />
