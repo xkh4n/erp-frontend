@@ -12,7 +12,7 @@ type Respuesta = {
 
 
 
-export default function AsignarPantalla() {
+export default function CrearPantalla() {
     const navigate = useNavigate();
 
     
@@ -254,7 +254,7 @@ export default function AsignarPantalla() {
     return (
         <div className='flex flex-col items-center justify-center h-max bg-gray-200 p-4 md:p-5 lg:p-6'>
             <div className='w-full max-w-4xl mx-auto px-4 sm:px-6 lg:px-8'>
-                <h1 className='text-xl md:text-2xl lg:text-3xl font-bold mb-6 text-center text-gray-800'>Asignar Pantalla</h1>
+                <h1 className='text-xl md:text-2xl lg:text-3xl font-bold mb-6 text-center text-gray-800'>Creación de Pantalla</h1>
                 <form className='w-full'>
                     <div className='grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6'>
                         <div className="w-full">
