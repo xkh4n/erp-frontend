@@ -1,6 +1,8 @@
 import { useState, useEffect } from 'react';
 import axios from 'axios';
-import { CustomError } from '../../../../Library/Errores';
+import { saveOutline } from 'ionicons/icons'
+import { IonIcon } from '@ionic/react'
+import { CustomError, createValidationError } from '../../../../Library/Errores';
 import { useNavigate } from 'react-router-dom';
 
 
@@ -23,14 +25,13 @@ export default function CrearPantalla() {
     const [servicios, setServicios] = useState<Respuesta[]>([]);
     const [procesos, setProcesos] = useState<Respuesta[]>([]);
 
+    const [guardado, setGuardado] = useState(false);
+
     const [selectedGerencia, setSelectedGerencia] = useState('');
     const [selectedSubgerencia, setSelectedSubgerencia] = useState('');
     const [selectedDepartamento, setSelectedDepartamento] = useState('');
     const [selectedServicio, setSelectedServicio] = useState('');
 
-    const [errorCode, setErrorCode] = useState(0);
-    const [errorMessage, setErrorMessage] = useState('');
-    const [errorDetails, setErrorDetails] = useState('');
 
     const traeGerencias = async () => {
         if(!gerencias) return;
@@ -53,9 +54,6 @@ export default function CrearPantalla() {
                         detail: errorData.details
                     }
                 });
-                setErrorCode(errorData.code);
-                setErrorMessage(errorData.message);
-                setErrorDetails(errorData.details);
             }
             if(error instanceof axios.AxiosError){
                 navigate('/error', {
@@ -69,6 +67,7 @@ export default function CrearPantalla() {
             }
         }
     }
+
     const traeSubGerencias = async () => {
         if (!selectedGerencia) return;
         try {
@@ -92,9 +91,6 @@ export default function CrearPantalla() {
                         detail: errorData.details
                     }
                 });
-                setErrorCode(errorData.code);
-                setErrorMessage(errorData.message);
-                setErrorDetails(errorData.details);
             }
             if(error instanceof axios.AxiosError){
                 navigate('/error', {
@@ -132,9 +128,6 @@ export default function CrearPantalla() {
                         detail: errorData.details
                     }
                 });
-                setErrorCode(errorData.code);
-                setErrorMessage(errorData.message);
-                setErrorDetails(errorData.details);
             }
             if(error instanceof axios.AxiosError){
                 navigate('/error', {
@@ -173,9 +166,6 @@ export default function CrearPantalla() {
                         detail: errorData.details
                     }
                 });
-                setErrorCode(errorData.code);
-                setErrorMessage(errorData.message);
-                setErrorDetails(errorData.details);
             }
             if(error instanceof axios.AxiosError){
                 navigate('/error', {
@@ -214,9 +204,6 @@ export default function CrearPantalla() {
                         detail: errorData.details
                     }
                 });
-                setErrorCode(errorData.code);
-                setErrorMessage(errorData.message);
-                setErrorDetails(errorData.details);
             }
             if(error instanceof axios.AxiosError){
                 navigate('/error', {
@@ -230,6 +217,7 @@ export default function CrearPantalla() {
             }
         }
     }
+
     useEffect(() => {
         // Fetch gerencias from backend
         traeGerencias();
@@ -251,11 +239,68 @@ export default function CrearPantalla() {
         traerProcesos();
     }, [selectedServicio]);
 
+    useEffect(() => {
+        if(guardado) {
+            navigate('/');;
+        }
+    })
+    const handlerSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
+        e.preventDefault()
+        const formData = new FormData(e.currentTarget)
+        try {
+            const pantalla = formData.get('pantalla')?.toString();
+            if(selectedGerencia === '') throw createValidationError('La Gerencia no puede estar vacía', 'Debe Seleccionar una Gerencia');
+            if(selectedSubgerencia === '') throw createValidationError('La Subgerencia no puede estar vacía', 'Debe Seleccionar una Subgerencia');
+            if(selectedDepartamento === '') throw createValidationError('El Departamento no puede estar vacío', 'Debe Seleccionar un Departamento');
+            if(selectedServicio === '') throw createValidationError('El Servicio no puede estar vacío', 'Debe Seleccionar un Servicio');
+            if(formData.get('proceso')?.toString() === '') throw createValidationError('El Proceso no puede estar vacío', 'Debe Seleccionar un Proceso');
+            if(!pantalla) throw createValidationError('El nombre de la Pantalla no puede estar Vacío', 'No se ha ingresado un nombre para la pantalla');
+            const datosEnviar = {
+                gerencia: selectedGerencia,
+                subgerencia: selectedSubgerencia,
+                departamento: departamentos.find(depto => depto.codigo === parseInt(selectedDepartamento))?._id,
+                servicio: servicios.find(servicio => servicio.codigo === parseInt(selectedServicio))?._id,
+                proceso: procesos.find(proceso => proceso._id === formData.get('proceso')?.toString())?._id,
+                pantalla:pantalla
+            }
+            // Enviar datos al backend
+            const response = await axios.put(`${import.meta.env.VITE_API_URL}/vista/nueva`, datosEnviar, {
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                timeout: 3000 // timeout de 3 segundos
+            })
+            setGuardado(true);
+            // Redireccionar al usuario a la página de lista de pantallas
+            console.log("Resultado: ",response.data.data)
+        }catch (error) {
+            if(error instanceof CustomError){
+                const errorData = error.toJSON();
+                navigate('/error', {
+                    state: {
+                        code: errorData.code,
+                        message: errorData.message,
+                        detail: errorData.details
+                    }
+                });
+            }
+            if(error instanceof axios.AxiosError){
+                navigate('/error', {
+                    state: {
+                        code: error.response?.status || 500,
+                        message: error.message || 'Network Error',
+                        detail: error.response?.statusText || 'Unknown error'
+                    }
+                });
+                console.log(error.response);
+            }
+        }
+    }
     return (
         <div className='flex flex-col items-center justify-center h-max bg-gray-200 p-4 md:p-5 lg:p-6'>
             <div className='w-full max-w-4xl mx-auto px-4 sm:px-6 lg:px-8'>
                 <h1 className='text-xl md:text-2xl lg:text-3xl font-bold mb-6 text-center text-gray-800'>Creación de Pantalla</h1>
-                <form className='w-full'>
+                <form className='w-full' onSubmit={handlerSubmit}>
                     <div className='grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6'>
                         <div className="w-full">
                             <label className="block text-gray-700 text-sm font-medium mb-2" htmlFor='gerencia'>Gerencia</label>
@@ -307,6 +352,12 @@ export default function CrearPantalla() {
                             <label className="block text-gray-700 text-sm font-medium mb-2" htmlFor='pantalla'>Nombre de Pantalla</label>
                             <input id='pantalla' name='pantalla' type="text" className="w-full px-3 py-2 md:px-4 md:py-2 rounded-lg border border-gray-300 shadow-sm text-sm md:text-base placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-200" disabled={!selectedServicio} />
                         </div>
+                    </div>
+                    <div className='flex flex-1 row-auto'>
+                    <button type='submit' className="flex justify-center mt-5 items-center bg-blue-950 hover:bg-red-600 shadow-red-600/50 text-white focus:outline-none focus:ring py-2 w-full rounded-full shadow-xl hover:shadow-blue-800/50 transition delay-10 duration-300 ease-in-out hover:translate-y-1">
+                        <IonIcon icon={saveOutline} className="w-5 h-5" />
+                        <p className="ml-1 text-lg">Guardar</p>
+                    </button>
                     </div>
                 </form>
             </div>
