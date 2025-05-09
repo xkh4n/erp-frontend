@@ -1,6 +1,7 @@
 import { Link } from "react-router-dom";
 import { chevronDownOutline } from 'ionicons/icons';
 import { IonIcon } from '@ionic/react';
+import { useState } from 'react';
 import './index.css';
 
 type MenuItem = {
@@ -10,10 +11,10 @@ type MenuItem = {
 };
 
 export default function index() {
+    const [openMenus, setOpenMenus] = useState<{ [key: string]: boolean }>({});
     
     const menuItems: MenuItem[] = [
         { label: 'Home', link: '/' },
-        { label: 'Reciclaje', link: '/reciclaje'},
         { label: 'Sistemas', link: '#', menuItems: [
             { label: 'Desarrollo', link: '#' },
             { label: 'Presupuesto', link: '#' },
@@ -42,6 +43,10 @@ export default function index() {
                         { label: 'Finalizar Pantalla', link: '/finalizarpantalla' },
                         { label: 'Asignar Pantalla', link: '/asignarpantalla' },
                     ]},
+                    {label: 'Proceso', link: '#', menuItems: [
+                        { label: 'Crear Proceso', link: '/crearproceso' },
+                        { label: 'Asignar Proceso', link: '/asignarproceso' },
+                    ]},
                 ]},
                 { label: 'Adquisiciones', link: '/adquisiciones', menuItems:[
                     { label: 'Ingresos', link: '/ingresos' },
@@ -50,8 +55,9 @@ export default function index() {
                         { label: 'Consultar Proveedor', link: '/consultar_proveedor', menuItems: [] },
                     ]},
                     { label: 'Productos', link: '/productos', menuItems: [
-                        { label: 'Crear Producto', link: '/crear_producto', menuItems: [] },
-                        { label: 'Consultar Producto', link: '/consultar_producto', menuItems: [] },
+                        { label: 'Reciclar', link: '/reciclaje'},
+                        { label: 'Crear Producto', link: '/crear_producto'},
+                        { label: 'Consultar Producto', link: '/consultar_producto' },
                     ]}
                 ] }
             ] },
@@ -59,49 +65,74 @@ export default function index() {
         { label: 'Contacto', link: '/contacto'},
         { label: 'Registro', link: '/registro'},
     ];
-    const renderMenuItems = (items: MenuItem[]) => {
-        return items.map((item, index) => (
-            <li key={index} className="ml-2 px-3 py-1 mt-2 bg-red-600 text-blue-900 rounded-full hover:bg-blue-950  hover:shadow-blue-800/50 transition delay-10 duration-300 ease-in-out hover:translate-x-1 hover:text-white">
-                <Link to={item.link} className="flex items-center gap-2">
-                    <button className=" outline-none focus:outline-none rounded-sm flex items-center min-w-32">
-                        <span className="pr-1 font-semibold flex-1 text-blue-900 rounded-full hover:rounded-full hover:bg-blue-950 hover:text-red-600 hover:shadow-blue-800/50 transition delay-10 duration-300 ease-in-out">{item.label}</span>
-                        {item.menuItems && item.menuItems.length > 0 && (
-                            <span><IonIcon icon={chevronDownOutline} className="w-4 h-4 text-gray-500" /></span>                        
-                        )}
-                    </button>
-                </Link>
-                {item.menuItems && item.menuItems.length > 0 && (
-                    <ul className="bg-white border rounded-sm absolute top-0 right-0 transition duration-150 ease-in-out origin-top-left min-w-32">
-                        {renderMenuItems(item.menuItems)}
-                    </ul>
-                )}
-            </li>
-        ));
+    const toggleMenu = (index: string) => {
+        setOpenMenus(prev => {
+            // Si el menú ya está abierto, solo lo cerramos
+            if (prev[index]) {
+                return {
+                    ...prev,
+                    [index]: false
+                };
+            }
+            
+            // Si el menú está cerrado, cerramos todos los demás y abrimos este
+            const newState = {};
+            Object.keys(prev).forEach(key => {
+                newState[key] = false;
+            });
+            return {
+                ...newState,
+                [index]: true
+            };
+        });
+    };
+    const renderMenuItems = (items: MenuItem[], level = 0) => {
+        return items.map((item, index) => {
+            const menuKey = `menu-${level}-${index}`;
+            return (
+                <li key={index} className="relative inline-block text-left">
+                    <div className="flex items-center">
+                        <button 
+                            onClick={() => item.menuItems && toggleMenu(menuKey)}
+                            className="inline-flex justify-center px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md shadow-sm hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-gray-100 focus:ring-blue-500"
+                        >
+                            <span>{item.label}</span>
+                            {item.menuItems && item.menuItems.length > 0 && (
+                                <IonIcon icon={chevronDownOutline} className="w-5 h-5 ml-2" />
+                            )}
+                        </button>
+                    </div>
+                    {item.menuItems && item.menuItems.length > 0 && openMenus[menuKey] && (
+                        <div className={`absolute ${level === 0 ? 'left-0 top-full' : 'left-full top-0'} mt-2 w-56 rounded-md shadow-lg bg-white ring-1 ring-black ring-opacity-5 px-2 py-2 z-50`}>
+                            {renderMenuItems(item.menuItems, level + 1)}
+                        </div>
+                    )}
+                </li>
+            );
+        });
     };
 
     return (
-        <nav className="bg-gray-200 shadow shadow-gray-300 w-100 px-8 md:px-auto">
-            <div className="md:h-16 h-28 mx-auto md:px-4 container flex items-center justify-between flex-wrap md:flex-nowrap">
-                <div className="text-blue-950 md:order-1 flex items-center gap-2">
-                    <img src="/images/imperial.png" alt="Logo" className="h-16 w-16 md:h-12 md:w-12 rounded-full" />
-                    <span className="text-2xl font-bold">
-                        <img src="/images/imperial_letras.png" alt="Logo" className="h-5" />
-                    </span>
-                </div>
-                <div className="text-gray-500 order-3 w-full md:w-auto md:order-2">
-                    <ul className="flex font-semibold justify-between">
-                        {renderMenuItems(menuItems)}
-                    </ul>
-                </div>
-                <div className="order-2 md:order-3">
-                    <Link to="/login">
-                        <button className="px-4 py-2 bg-blue-950 hover:bg-red-600 text-gray-50 rounded-xl flex items-center gap-2">
-                            <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
-                                <path fillRule="evenodd" d="M3 3a1 1 0 011 1v12a1 1 0 11-2 0V4a1 1 0 011-1zm7.707 3.293a1 1 0 010 1.414L9.414 9H17a1 1 0 110 2H9.414l1.293 1.293a1 1 0 01-1.414 1.414l-3-3a1 1 0 010-1.414l3-3a1 1 0 011.414 0z" clipRule="evenodd" />
-                            </svg>
-                            <span>Login</span>
-                        </button>
-                    </Link>
+        <nav className="bg-gray-100 shadow-lg">
+            <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+                <div className="flex items-center justify-between h-16">
+                    <div className="flex items-center">
+                        <img src="/images/imperial.png" alt="Logo" className="h-12 w-12 rounded-full" />
+                        <img src="/images/imperial_letras.png" alt="Logo" className="h-5 ml-2" />
+                    </div>
+                    <div className="flex items-center">
+                        <ul className="flex space-x-4">
+                            {renderMenuItems(menuItems)}
+                        </ul>
+                        <Link to="/login" className="ml-4">
+                            <button className="px-4 py-2 bg-blue-950 hover:bg-red-600 text-white rounded-md flex items-center gap-2 transition-colors duration-200">
+                                <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+                                    <path fillRule="evenodd" d="M3 3a1 1 0 011 1v12a1 1 0 11-2 0V4a1 1 0 011-1zm7.707 3.293a1 1 0 010 1.414L9.414 9H17a1 1 0 110 2H9.414l1.293 1.293a1 1 0 01-1.414 1.414l-3-3a1 1 0 010-1.414l3-3a1 1 0 011.414 0z" clipRule="evenodd" />
+                                </svg>
+                                <span>Login</span>
+                            </button>
+                        </Link>
+                    </div>
                 </div>
             </div>
         </nav>

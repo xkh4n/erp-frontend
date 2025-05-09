@@ -9,6 +9,7 @@ import ErrorPage from "../Views/Errors/ErrorPage";
 import BajaProducto from "../Views/Reciclaje/BajaProducto";
 import AsignarPantalla from "../Views/Funcional/Pantallas/Asignar";
 import CrearPantalla from "../Views/Funcional/Pantallas/Crear";
+import CrearProceso from "../Views/Funcional/Procesos/Cear";
 
 export default function index() {
     return (
@@ -21,6 +22,7 @@ export default function index() {
                     <Route path="/registro" element={<Registro />} />
                     <Route path="/asignarpantalla" element={<AsignarPantalla />} />
                     <Route path="/crearpantalla" element={<CrearPantalla />} />
+                    <Route path="/crearproceso" element={<CrearProceso />} />
                 </Route>
                 <Route element={<LoginLayout />}>
                     <Route path="/login" element={<Login />} />
