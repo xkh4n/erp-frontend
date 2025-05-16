@@ -1,5 +1,5 @@
 import { Link } from "react-router-dom";
-import './index.css';
+import './styles.css';
 
 type MenuItem = {
     label: string;
@@ -7,11 +7,59 @@ type MenuItem = {
     menuItems?: MenuItem[];
 };
 
+
+
 export default function index() {
-    
     const menuItems: MenuItem[] = [
         { label: 'Home', link: '/' },
         { label: 'Contacto', link: '/contacto'},
+        { label: 'Comercial', link: '#', menuItems: [
+            { label: 'Negocios', link: '/negocios' },
+            { label: 'Marketing', link: '/marketing' },
+            { label: 'Compras', link: '#', menuItems:[
+                { label: 'Ferreteria', link: '#', menuItems: [
+                    { label: 'Herramientas', link: '#', menuItems: [
+                        { label: 'Crear Solicitud', link: '/crearsolicitud' },
+                        { label: 'Revisar Solicitud', link: '/revisarsolicitud' },
+                        { label: 'Finalizar Solicitud', link: '/finalizarsolicitud' },
+                    ] },
+                    { label: 'Electricidad', link: '#', menuItems: [
+                        { label: 'Crear Cuenta', link: '/crearcuentasnt'},
+                        { label: 'Desbloquear Cuenta', link: '/desbloquearcuentasnt' },
+                        { label: 'Suspender Cuenta', link: '/suspendercuentasnt'},
+                    ] },
+                    { label: 'Quincalleria', link: '#', menuItems: [
+                        { label: 'Crear Cuenta', link: '/crearcuentascorreo' },
+                        { label: 'Desbloquear Cuenta', link: '/desbloquearcuentascorreo' },
+                        { label: 'Suspender Cuenta', link: '/suspendercuentascorreo'},
+                    ] },
+                ] },
+                { label: 'Tableros', link: '#' , menuItems: [
+                    {label: 'Enchapados', link: '#', menuItems: [
+                        { label: 'Crear Pantalla', link: '/crearpantalla' },
+                        { label: 'Revisar Pantalla', link: '/revisarpantalla' },
+                        { label: 'Finalizar Pantalla', link: '/finalizarpantalla' },
+                        { label: 'Asignar Pantalla', link: '/asignarpantalla' },
+                    ]},
+                    {label: 'Terciados', link: '#', menuItems: [
+                        { label: 'Crear Proceso', link: '/crearproceso' },
+                        { label: 'Asignar Proceso', link: '/asignarproceso' },
+                    ]},
+                ]},
+                { label: 'Maderas', link: '#', menuItems:[
+                    { label: 'Ingresos', link: '/ingresos' },
+                    { label: 'Proveedores', link: '/proveedores', menuItems: [
+                        { label: 'Crear Proveedor', link: '/crear_proveedor', menuItems: [] },
+                        { label: 'Consultar Proveedor', link: '/consultar_proveedor', menuItems: [] },
+                    ]},
+                    { label: 'Productos', link: '/productos', menuItems: [
+                        { label: 'Reciclar', link: '/reciclaje'},
+                        { label: 'Crear Producto', link: '/crear_producto'},
+                        { label: 'Consultar Producto', link: '/consultar_producto' },
+                    ]}
+                ] }
+            ] },
+        ]},
         { label: 'Registro', link: '/registro'},
         { label: 'Sistemas', link: '#', menuItems: [
             { label: 'Desarrollo', link: '#' },
@@ -64,7 +112,7 @@ export default function index() {
 
     const menulvl1ConSubmenu = (label: string, link: string, menuItems: MenuItem[]) => {
         return (
-            <li className="relative px-3 py-1 group/submenu text-center mt-2 rounded-full bg-red-600 hover:bg-red-300">
+            <li className="relative px-3 py-1 group/submenu text-center rounded-full hover:bg-red-300">
                 <button className="w-full text-left flex items-center outline-none focus:outline-none rounded-full">
                     <span className="pr-1 flex-1 text-blue-950 font-bold">{label}</span>
                     <span className="mr-auto">
@@ -73,7 +121,7 @@ export default function index() {
                         </svg>
                     </span>
                 </button>
-                <ul className="bg-transparent absolute top-0 right-0 transition duration-150 ease-in-out origin-top-left min-w-32 invisible group-hover/submenu:visible">
+                <ul className="bg-red-600 border rounded-sm absolute top-0 right-0 transition duration-150 ease-in-out origin-top-left min-w-32 invisible group-hover/submenu:visible">
                     {menuItems.map((item, index) => (
                         item.menuItems && item.menuItems.length > 0 
                             ? menulvl1ConSubmenu(item.label, item.link, item.menuItems)
@@ -86,7 +134,7 @@ export default function index() {
 
     const menulvl0ConSubmenu = (label: string, link: string, menuItems: MenuItem[]) => {
         return (
-            <li className="inline-block relative group/menu rounded-full mt-2 bg-red-600 hover:bg-red-300">
+            <li className="inline-block relative group/menu rounded-full bg-red-600 hover:bg-red-300">
                 <button className="outline-none focus:outline-none px-3 py-1 rounded-full flex items-center min-w-40">
                     <span className="pr-1 flex-1 text-blue-950 font-bold">{label}</span>
                     <span>
@@ -95,7 +143,7 @@ export default function index() {
                         </svg>
                     </span>
                 </button>
-                <ul className="bg-transparent rounded-sm transform scale-0 group-hover/menu:scale-100 absolute transition duration-150 ease-in-out origin-top min-w-32">
+                <ul className="bg-red-600 rounded-sm transform scale-0 group-hover/menu:scale-100 absolute transition duration-150 ease-in-out origin-top min-w-32">
                     {menuItems.map((item, index) => (
                         item.menuItems && item.menuItems.length > 0 
                             ? menulvl1ConSubmenu(item.label, item.link, item.menuItems)
@@ -108,9 +156,7 @@ export default function index() {
 
     const menulvl0SinSubmenu = (label:string, link:string, isFirstLevel:boolean = true) => {
         return (
-            <li className={isFirstLevel 
-                ? "inline-block px-3 py-1 bg-red-600 m-2 mt-2 min-w-40 rounded-full text-blue-950 font-bold text-center hover:bg-red-300" 
-                : "outline-none focus:outline-none px-3 mt-2 py-1 bg-red-600 rounded-full flex items-center min-w-40 text-blue-950 font-bold text-center hover:bg-red-300"}>
+            <li className={isFirstLevel ? "inline-block px-3 py-1 bg-red-600 m-2 min-w-40 rounded-full text-blue-950 font-bold text-center hover:bg-red-300" : "outline-none focus:outline-none px-3 py-1 rounded-full flex items-center min-w-40 text-blue-950 font-bold text-center hover:bg-red-300"}>
                 <Link to={link}>
                     {label}
                 </Link>
@@ -125,32 +171,11 @@ export default function index() {
                 : menulvl0SinSubmenu(item.label, item.link)
         ));
     }
-
     return (
         <nav className="bg-white shadow shadow-gray-300 w-100 px-50 h-14 md:px-auto flex items-center">
-            <div className="md:h-16 h-28 mx-auto md:px-4 container flex items-center justify-between flex-wrap md:flex-nowrap">
-                <div className="text-blue-950 md:order-1 flex items-center gap-2">
-                    <img src="/images/imperial.png" alt="Logo" className="h-16 w-16 md:h-12 md:w-12 rounded-full" />
-                    <span className="text-2xl font-bold">
-                        <img src="/images/imperial_letras.png" alt="Logo" className="h-5" />
-                    </span>
-                </div>
-                <div className="text-blue-950 font-bold order-3 w-full md:w-auto md:order-2">
-                    <ul>
-                        {renderMenuItems(menuItems)}
-                    </ul>
-                </div>
-                <div className="order-2 md:order-3">
-                    <Link to="/login">
-                        <button className="px-4 py-2 bg-blue-950 hover:bg-red-600 text-gray-50 rounded-xl flex items-center gap-2">
-                            <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
-                                <path fillRule="evenodd" d="M3 3a1 1 0 011 1v12a1 1 0 11-2 0V4a1 1 0 011-1zm7.707 3.293a1 1 0 010 1.414L9.414 9H17a1 1 0 110 2H9.414l1.293 1.293a1 1 0 01-1.414 1.414l-3-3a1 1 0 010-1.414l3-3a1 1 0 011.414 0z" clipRule="evenodd" />
-                            </svg>
-                            <span>Login</span>
-                        </button>
-                    </Link>
-                </div>
+            <div className="text-blue-950 font-bold order-3 w-full md:w-auto md:order-2">
+                {renderMenuItems(menuItems)}
             </div>
         </nav>
-    );
+    )
 }
