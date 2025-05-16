@@ -65,10 +65,10 @@ export default function index() {
     ];
     const renderMenuItems = (items: MenuItem[]) => {
         return items.map((item, index) => (
-            <li key={index} className="ml-2 px-3 py-1 mt-2 bg-red-600 text-blue-900 rounded-full hover:bg-blue-950  hover:shadow-blue-800/50 transition delay-10 duration-300 ease-in-out hover:translate-x-1 hover:text-white">
+            <li key={index} className="ml-2 px-3 py-1 mt-2 bg-red-600 text-blue-900 rounded-full hover:bg-blue-950  hover:shadow-blue-800/50 transition delay-10 duration-300 ease-in-out hover:translate-y-1 hover:text-white">
                 <Link to={item.link} className="flex items-center gap-2">
-                    <button className=" outline-none focus:outline-none rounded-sm flex items-center min-w-32 z-50">
-                        <span className="pr-1 font-semibold flex-1 text-blue-900 rounded-full hover:rounded-full hover:bg-blue-950 hover:text-red-600 hover:shadow-blue-800/50 transition delay-10 duration-300 ease-in-out">{item.label}</span>
+                    <button className=" outline-none focus:outline-none rounded-sm flex items-center min-w-32">
+                        <span className="pr-1 font-semibold flex-1 text-blue-900 rounded-full hover:rounded-full hover:bg-blue-950 hover:p-1 hover:text-red-600 hover:shadow-blue-800/50 transition delay-10 duration-300 ease-in-out">{item.label}</span>
                         {item.menuItems && item.menuItems.length > 0 && (
                             <span><IonIcon icon={chevronDownOutline} className="w-4 h-4 text-gray-500" /></span>                        
                         )}
