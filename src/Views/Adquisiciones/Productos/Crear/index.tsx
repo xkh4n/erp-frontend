@@ -6,6 +6,13 @@ import { CustomError, createValidationError } from '../../../../Library/Errores'
 import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
 
+
+type ErrorState = {
+    code: number;
+    message: string;
+    detail: string;
+};
+
 export default function CrearProducto() {
     const navigate = useNavigate();
 
@@ -13,109 +20,59 @@ export default function CrearProducto() {
     const [productoModelo, setModelo] = useState('')
     const [productoDescripcion, setDescripcion] = useState('')
 
-    const validaName = () => {
-        try {
-            if(!IsParagraph(productoName)) {
-                throw createValidationError('Error al Validar el Nombre del Producto: ', productoName);
-            }
-        } catch (error) {
-            if(error instanceof CustomError){
-                const errorData = error.toJSON();
-                navigate('/error', {
-                    state: {
-                        code: errorData.code,
-                        message: errorData.message,
-                        detail: errorData.details
-                    }
-                });
-            }
-            if(error instanceof axios.AxiosError){
-                navigate('/error', {
-                    state: {
-                        code: error.response?.status || 500,
-                        message: error.message || 'Network Error',
-                        detail: error.response?.statusText || 'Unknown error'
-                    }
-                });
-                console.log(error.response);
-            }
+    function handleError(error: unknown, navigate: (path: string, options?: { state: ErrorState }) => void) {
+        if (error instanceof CustomError) {
+            const errorData = error.toJSON();
+            navigate('/error', {
+                state: {
+                    code: errorData.code,
+                    message: errorData.message,
+                    detail: errorData.details
+                }
+            });
+        } else if (error instanceof axios.AxiosError) {
+            navigate('/error', {
+                state: {
+                    code: error.response?.status || 500,
+                    message: error.message || 'Network Error',
+                    detail: error.response?.statusText || 'Unknown error'
+                }
+            });
         }
     }
 
-    const validaModelo = () => {
+    const validateField = (fieldValue: string, fieldName: string) => {
         try {
-            if(!IsParagraph(productoModelo)) {
-                throw createValidationError('Error al Validar el Modelo del Producto: ', productoModelo);
+            if (!IsParagraph(fieldValue) || fieldValue === '') {
+                throw createValidationError(`Error al Validar ${fieldName}: `, fieldValue);
             }
         } catch (error) {
-            if(error instanceof CustomError){
-                const errorData = error.toJSON();
-                navigate('/error', {
-                    state: {
-                        code: errorData.code,
-                        message: errorData.message,
-                        detail: errorData.details
-                    }
-                });
-            }
-            if(error instanceof axios.AxiosError){
-                navigate('/error', {
-                    state: {
-                        code: error.response?.status || 500,
-                        message: error.message || 'Network Error',
-                        detail: error.response?.statusText || 'Unknown error'
-                    }
-                });
-                console.log(error.response);
-            }
-        }
-    }
-
-    const validaDescription = () => {
-        try {
-            if(!IsParagraph(productoDescripcion)) {
-                throw createValidationError('Error al Validar la Descripción del Producto: ', productoDescripcion);
-            }
-        } catch (error) {
-            if(error instanceof CustomError){
-                const errorData = error.toJSON();
-                navigate('/error', {
-                    state: {
-                        code: errorData.code,
-                        message: errorData.message,
-                        detail: errorData.details
-                    }
-                });
-            }
-            if(error instanceof axios.AxiosError){
-                navigate('/error', {
-                    state: {
-                        code: error.response?.status || 500,
-                        message: error.message || 'Network Error',
-                        detail: error.response?.statusText || 'Unknown error'
-                    }
-                });
-                console.log(error.response);
-            }
+            handleError(error, navigate);
         }
     }
 
     const handlerSubmit = async () => {
-        if(productoName !== ''){
-            validaName();
-            return; 
-
+        try {
+            validateField(productoName, 'el Nombre del Producto');
+            validateField(productoModelo, 'el Modelo del Producto');
+            validateField(productoDescripcion, 'la Descripción del Producto');
+            
+            const datosEnviar = [{
+                nombre: productoName,
+                modelo: productoModelo,
+                descripcion: productoDescripcion
+            }];
+    
+            await axios.put(`${import.meta.env.VITE_API_URL}/producto/nuevo`, datosEnviar, {
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                timeout: 3000 // timeout de 3 segundos
+            });
+            navigate('/productos'); // Redirige a la página de productos después de guardar el producto
+        } catch (error) {
+            handleError(error, navigate);
         }
-        if(productoModelo !== ''){
-            validaModelo();
-            return; 
-
-        }
-        if(productoDescripcion !== ''){
-            validaDescription();
-            return; 
-        }
-        alert("Ok");
     }
 
     return (

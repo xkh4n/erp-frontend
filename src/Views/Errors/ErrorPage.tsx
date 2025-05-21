@@ -17,6 +17,7 @@ const ErrorPage: React.FC<ErrorProps> = ({ code, message, detail }) => {
         401: '/errors/401.png',
         403: '/errors/403.png',
         404: '/errors/404.png',
+        409: '/errors/409.png',
         500: '/errors/500.png',
         501: '/errors/501.png',
         // Agregar más códigos de error según sea necesario
@@ -33,8 +34,8 @@ const ErrorPage: React.FC<ErrorProps> = ({ code, message, detail }) => {
                 className="h-1/3 opacity-90 shadow-lg shadow-red-600/95 rounded-full object-contain"
             />
             <div className="flex flex-col items-center justify-center">
-                <p className="mt-8 text-2xl md:text-3xl lg:text-4xl font-bold text-amber-400">{detail}</p>
-                <p className="md:text-lg xl:text-xl text-red-600 mt-4">{message}</p>
+                <p className="mt-8 text-2xl md:text-3xl lg:text-4xl font-bold text-red-600">{message}</p>
+                <p className="md:text-lg xl:text-xl text-amber-400 mt-4">{detail}</p>
                 <button
                     type="button"
                     onClick={() => navigate(-1)}
