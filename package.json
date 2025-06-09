@@ -11,6 +11,7 @@
     "test": "jest"
   },
   "dependencies": {
+    "@fdograph/rut-utilities": "^1.4.0",
     "@ionic/react": "^8.5.3",
     "axios": "^1.8.4",
     "dotenv": "^16.4.7",
