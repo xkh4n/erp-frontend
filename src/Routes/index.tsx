@@ -12,6 +12,8 @@ import CrearPantalla from "../Views/Funcional/Pantallas/Crear";
 import CrearProceso from "../Views/Funcional/Procesos/Cear";
 import CrearProducto from "../Views/Adquisiciones/Productos/Crear";
 import CrearProveedor from "../Views/Adquisiciones/Proveedor/Crear";
+import IngresoProducto from "../Views/Adquisiciones/Productos/Ingreso";
+import CrearSolicitud from "../Views/Adquisiciones/Solicitud/Crear";
 
 export default function index() {
     return (
@@ -27,6 +29,8 @@ export default function index() {
                     <Route path="/crearproceso" element={<CrearProceso />} />
                     <Route path="/crear_proveedor" element={<CrearProveedor />} />
                     <Route path="/crear_producto" element={<CrearProducto />} />
+                    <Route path="/ingresos" element={<IngresoProducto />} />
+                    <Route path="/crear_solicitud" element={<CrearSolicitud />} />
                 </Route>
                 <Route element={<LoginLayout />}>
                     <Route path="/login" element={<Login />} />

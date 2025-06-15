@@ -56,13 +56,18 @@ export default function index() {
                         { label: 'Reciclar', link: '/reciclaje'},
                         { label: 'Crear Producto', link: '/crear_producto'},
                         { label: 'Consultar Producto', link: '/consultar_producto' },
+                    ]},
+                    { label: 'Solicitud', link: '#', menuItems: [
+                        { label: 'Solicitar', link: '/crear_solicitud'},
+                        { label: 'Autorizar', link: '/autorizar_solicitud'},
+                        { label: 'Cancelar', link: '/cancelar_solicitud' },
                     ]}
                 ] }
             ] },
         ]}
     ];
 
-    const menulvl1ConSubmenu = (label: string, link: string, menuItems: MenuItem[]) => {
+    const menulvl1ConSubmenu = (label: string, menuItems: MenuItem[]) => {
         return (
             <li className="relative px-3 py-1 group/submenu text-center mt-2 rounded-full bg-red-600 hover:bg-red-300">
                 <button className="w-full text-left flex items-center outline-none focus:outline-none rounded-full">
@@ -74,9 +79,9 @@ export default function index() {
                     </span>
                 </button>
                 <ul className="bg-transparent absolute top-0 right-0 transition duration-150 ease-in-out origin-top-left min-w-32 invisible group-hover/submenu:visible">
-                    {menuItems.map((item, index) => (
+                    {menuItems.map((item) => (
                         item.menuItems && item.menuItems.length > 0 
-                            ? menulvl1ConSubmenu(item.label, item.link, item.menuItems)
+                            ? menulvl1ConSubmenu(item.label, item.menuItems)
                             : menulvl0SinSubmenu(item.label, item.link, false)
                     ))}
                 </ul>
@@ -84,7 +89,7 @@ export default function index() {
         );
     }
 
-    const menulvl0ConSubmenu = (label: string, link: string, menuItems: MenuItem[]) => {
+    const menulvl0ConSubmenu = (label: string, menuItems: MenuItem[]) => {
         return (
             <li className="inline-block relative group/menu rounded-full mt-2 bg-red-600 hover:bg-red-300">
                 <button className="outline-none focus:outline-none px-3 py-1 rounded-full flex items-center min-w-40">
@@ -96,9 +101,9 @@ export default function index() {
                     </span>
                 </button>
                 <ul className="bg-transparent rounded-sm transform scale-0 group-hover/menu:scale-100 absolute transition duration-150 ease-in-out origin-top min-w-32">
-                    {menuItems.map((item, index) => (
+                    {menuItems.map((item) => (
                         item.menuItems && item.menuItems.length > 0 
-                            ? menulvl1ConSubmenu(item.label, item.link, item.menuItems)
+                            ? menulvl1ConSubmenu(item.label, item.menuItems)
                             : menulvl0SinSubmenu(item.label, item.link, false)
                     ))}
                 </ul>
@@ -119,9 +124,9 @@ export default function index() {
     }
 
     const renderMenuItems = (items: MenuItem[]) => {
-        return items.map((item, index) => (
+        return items.map((item) => (
             item.menuItems && item.menuItems.length > 0 
-                ? menulvl0ConSubmenu(item.label, item.link, item.menuItems)
+                ? menulvl0ConSubmenu(item.label, item.menuItems)
                 : menulvl0SinSubmenu(item.label, item.link)
         ));
     }

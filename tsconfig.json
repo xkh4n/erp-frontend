@@ -6,6 +6,8 @@
   ],
   "compilerOptions": {
     "types": ["jest", "node"],
+    "noUnusedLocals": false,
+    "noUnusedParameters": false
     // ... otras configuraciones ...
   }
 }
