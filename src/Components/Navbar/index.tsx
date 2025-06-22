@@ -69,7 +69,7 @@ export default function index() {
 
     const menulvl1ConSubmenu = (label: string, menuItems: MenuItem[]) => {
         return (
-            <li className="relative px-3 py-1 group/submenu text-center mt-2 rounded-full bg-red-600 hover:bg-red-300">
+            <li key={label} className="relative px-3 py-1 group/submenu text-center mt-2 rounded-full bg-red-600 hover:bg-red-300">
                 <button className="w-full text-left flex items-center outline-none focus:outline-none rounded-full">
                     <span className="pr-1 flex-1 text-blue-950 font-bold">{label}</span>
                     <span className="mr-auto">
@@ -91,7 +91,7 @@ export default function index() {
 
     const menulvl0ConSubmenu = (label: string, menuItems: MenuItem[]) => {
         return (
-            <li className="inline-block relative group/menu rounded-full mt-2 bg-red-600 hover:bg-red-300">
+            <li key={label} className="inline-block relative group/menu rounded-full mt-2 bg-red-600 hover:bg-red-300">
                 <button className="outline-none focus:outline-none px-3 py-1 rounded-full flex items-center min-w-40">
                     <span className="pr-1 flex-1 text-blue-950 font-bold">{label}</span>
                     <span>
@@ -113,7 +113,7 @@ export default function index() {
 
     const menulvl0SinSubmenu = (label:string, link:string, isFirstLevel:boolean = true) => {
         return (
-            <li className={isFirstLevel 
+            <li key={label} className={isFirstLevel 
                 ? "inline-block px-3 py-1 bg-red-600 m-2 mt-2 min-w-40 rounded-full text-blue-950 font-bold text-center hover:bg-red-300" 
                 : "outline-none focus:outline-none px-3 mt-2 py-1 bg-red-600 rounded-full flex items-center min-w-40 text-blue-950 font-bold text-center hover:bg-red-300"}>
                 <Link to={link}>
