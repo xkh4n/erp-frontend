@@ -1,7 +1,5 @@
 li>ul {
-    transform: translatex(100%) scale(0);
-    z-index: 50;
-    position: absolute;
+    transform: translatex(100%) scale(0)
 }
 li:hover>ul {
     transform: translatex(101%) scale(1)
