@@ -110,7 +110,7 @@ export default function index() {
         ]}
     ];
 
-    const menulvl1ConSubmenu = (label: string, _link: string, menuItems: MenuItem[]) => {
+    const menulvl1ConSubmenu = (label: string, menuItems: MenuItem[]) => {
         return (
             <li className="relative px-3 py-1 group/submenu text-center rounded-full hover:bg-red-300">
                 <button className="w-full text-left flex items-center outline-none focus:outline-none rounded-full">
@@ -124,7 +124,7 @@ export default function index() {
                 <ul className="bg-red-600 border rounded-sm absolute top-0 right-0 transition duration-150 ease-in-out origin-top-left min-w-32 invisible group-hover/submenu:visible">
                     {menuItems.map((item) => (
                         item.menuItems && item.menuItems.length > 0 
-                            ? menulvl1ConSubmenu(item.label, item.link, item.menuItems)
+                            ? menulvl1ConSubmenu(item.label, item.menuItems)
                             : menulvl0SinSubmenu(item.label, item.link, false)
                     ))}
                 </ul>
@@ -132,7 +132,7 @@ export default function index() {
         );
     }
 
-    const menulvl0ConSubmenu = (label: string, _link: string, menuItems: MenuItem[]) => {
+    const menulvl0ConSubmenu = (label: string, menuItems: MenuItem[]) => {
         return (
             <li className="inline-block relative group/menu rounded-full bg-red-600 hover:bg-red-300">
                 <button className="outline-none focus:outline-none px-3 py-1 rounded-full flex items-center min-w-40">
@@ -146,7 +146,7 @@ export default function index() {
                 <ul className="bg-red-600 rounded-sm transform scale-0 group-hover/menu:scale-100 absolute transition duration-150 ease-in-out origin-top min-w-32">
                     {menuItems.map((item) => (
                         item.menuItems && item.menuItems.length > 0 
-                            ? menulvl1ConSubmenu(item.label, item.link, item.menuItems)
+                            ? menulvl1ConSubmenu(item.label, item.menuItems)
                             : menulvl0SinSubmenu(item.label, item.link, false)
                     ))}
                 </ul>
@@ -167,7 +167,7 @@ export default function index() {
     const renderMenuItems = (items: MenuItem[]) => {
         return items.map((item) => (
             item.menuItems && item.menuItems.length > 0 
-                ? menulvl0ConSubmenu(item.label, item.link, item.menuItems)
+                ? menulvl0ConSubmenu(item.label, item.menuItems)
                 : menulvl0SinSubmenu(item.label, item.link)
         ));
     }

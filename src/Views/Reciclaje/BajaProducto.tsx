@@ -1,6 +1,7 @@
-
+import { IsEmail, IsPassword} from '../../Library/Validations'
+import { CustomError } from '../../Library/Errores';
 import { useState } from 'react'
-
+import { useNavigate } from 'react-router-dom';
 import { TextBox } from "../../Components/Input";
 import { personAddOutline } from 'ionicons/icons'
 import { IonIcon } from '@ionic/react'
@@ -10,7 +11,7 @@ export default function BajaProducto() {
     const [errorProducto, setErrorProducto] = useState(false);
     const [serie, setSerie] = useState('');
     const [errorSerie, setErrorSerie] = useState(false);
-
+    const navigate = useNavigate();
 
     return (
         <div className='flex justify-center items-center'>

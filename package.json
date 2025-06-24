@@ -6,8 +6,11 @@
   "scripts": {
     "dev": "vite",
     "build": "tsc -b && vite build",
-    "lint": "eslint .",
+    "build:test": "tsc -b && vite build --mode testing",
+    "build:prod": "tsc -b && vite build --mode production",
     "preview": "vite preview",
+    "preview:test": "vite preview --mode testing",
+    "lint": "eslint .",
     "test": "jest"
   },
   "dependencies": {

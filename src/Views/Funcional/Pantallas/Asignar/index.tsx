@@ -46,16 +46,16 @@ export default function AsignarPantalla() {
         }catch (error) {
             if(error instanceof CustomError){
                 const errorData = error.toJSON();
+                navigate('/error', {
+                    state: {
+                        code: errorData.code,
+                        message: errorData.message,
+                        detail: errorData.details
+                    }
+                });
                 setErrorCode(errorData.code);
                 setErrorMessage(errorData.message);
                 setErrorDetails(errorData.details);
-                navigate('/error', {
-                    state: {
-                        code: errorCode,
-                        message: errorMessage,
-                        detail: errorDetails
-                    }
-                });
             }
             if(error instanceof axios.AxiosError){
                 navigate('/error', {
@@ -85,16 +85,16 @@ export default function AsignarPantalla() {
         }catch (error) {
             if(error instanceof CustomError){
                 const errorData = error.toJSON();
+                navigate('/error', {
+                    state: {
+                        code: errorData.code,
+                        message: errorData.message,
+                        detail: errorData.details
+                    }
+                });
                 setErrorCode(errorData.code);
                 setErrorMessage(errorData.message);
                 setErrorDetails(errorData.details);
-                navigate('/error', {
-                    state: {
-                        code: errorCode,
-                        message: errorMessage,
-                        detail: errorDetails
-                    }
-                });
             }
             if(error instanceof axios.AxiosError){
                 navigate('/error', {
@@ -125,16 +125,16 @@ export default function AsignarPantalla() {
         }catch (error) {
             if(error instanceof CustomError){
                 const errorData = error.toJSON();
+                navigate('/error', {
+                    state: {
+                        code: errorData.code,
+                        message: errorData.message,
+                        detail: errorData.details
+                    }
+                });
                 setErrorCode(errorData.code);
                 setErrorMessage(errorData.message);
                 setErrorDetails(errorData.details);
-                navigate('/error', {
-                    state: {
-                        code: errorCode,
-                        message: errorMessage,
-                        detail: errorDetails
-                    }
-                });
             }
             if(error instanceof axios.AxiosError){
                 navigate('/error', {
@@ -166,16 +166,16 @@ export default function AsignarPantalla() {
         }catch (error) {
             if(error instanceof CustomError){
                 const errorData = error.toJSON();
+                navigate('/error', {
+                    state: {
+                        code: errorData.code,
+                        message: errorData.message,
+                        detail: errorData.details
+                    }
+                });
                 setErrorCode(errorData.code);
                 setErrorMessage(errorData.message);
                 setErrorDetails(errorData.details);
-                navigate('/error', {
-                    state: {
-                        code: errorCode,
-                        message: errorMessage,
-                        detail: errorDetails
-                    }
-                });
             }
             if(error instanceof axios.AxiosError){
                 navigate('/error', {
@@ -207,16 +207,16 @@ export default function AsignarPantalla() {
         }catch (error) {
             if(error instanceof CustomError){
                 const errorData = error.toJSON();
+                navigate('/error', {
+                    state: {
+                        code: errorData.code,
+                        message: errorData.message,
+                        detail: errorData.details
+                    }
+                });
                 setErrorCode(errorData.code);
                 setErrorMessage(errorData.message);
                 setErrorDetails(errorData.details);
-                navigate('/error', {
-                    state: {
-                        code: errorCode,
-                        message: errorMessage,
-                        detail: errorDetails
-                    }
-                });
             }
             if(error instanceof axios.AxiosError){
                 navigate('/error', {

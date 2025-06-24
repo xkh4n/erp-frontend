@@ -4,8 +4,8 @@ WORKDIR /app
 COPY package*.json ./
 RUN npm install
 COPY . .
-COPY .env.production .env
-RUN npm run build:prod
+COPY .env.testing .env
+RUN npm run build:test
 
 # Etapa final con NGINX
 FROM nginx:1.27-alpine3.21-slim
