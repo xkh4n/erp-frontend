@@ -71,6 +71,11 @@ export default function CrearProducto() {
                 },
                 timeout: 3000 // timeout de 3 segundos
             });
+            setProducto('');
+            setModelo('');
+            setDescripcion('');
+            alert('Producto creado exitosamente');
+            // Redirigir a la página de productos después de guardar el producto
             navigate('/productos'); // Redirige a la página de productos después de guardar el producto
         } catch (error) {
             handleError(error, navigate);
