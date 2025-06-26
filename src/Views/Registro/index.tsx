@@ -64,19 +64,19 @@ export default function Index() {
                 throw createValidationError('Los Campos son Obligatorios', 'Los campos no pueden estar vacios');
             }
             
-        } catch (error: any) {
+        } catch (error) {
             if(error instanceof CustomError){
                 const errorData = error.toJSON();
-                navigate('/error', {
-                    state: {
-                        code: errorData.code,
-                        message: errorData.message,
-                        detail: errorData.details
-                    }
-                });
                 setErrorCode(errorData.code);
                 setErrorMessage(errorData.message);
                 setErrorDetails(errorData.details);
+                navigate('/error', {
+                    state: {
+                        code: errorCode,
+                        message: errorMessage,
+                        detail: errorDetails
+                    }
+                });
             }
             else if(error instanceof axios.AxiosError){
                 navigate('/error', {
@@ -91,9 +91,9 @@ export default function Index() {
             else if(error){
                 navigate('/error', {
                     state: {
-                      code: 501,
-                      message: error.name,
-                      detail: error.message
+                        code: 501,
+                        message: errorMessage,
+                        detail: errorDetails
                     }
                 });
             }

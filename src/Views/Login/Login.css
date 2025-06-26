@@ -1,5 +1,5 @@
 .bg-image {
-    background-image: url('images/maquina01.png');
+    background-image: url('/images/maquina01.png');
 }
 .backdrop {
     backdrop-filter: blur(2px);
