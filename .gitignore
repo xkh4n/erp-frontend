@@ -11,7 +11,9 @@ node_modules
 dist
 dist-ssr
 *.local
-.env.*
+.env.development
+.env.production
+.env.testing
 Dockerfile.*
 docker-compose.yml
 
@@ -25,3 +27,7 @@ docker-compose.yml
 *.njsproj
 *.sln
 *.sw?
+.env.development
+*.development
+*.production
+*.testing
