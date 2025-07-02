@@ -42,7 +42,6 @@ export default function AsignarPantalla() {
                 timeout: 3000 // timeout de 3 segundos
             })
             setGerencias(response.data.data);
-            console.log("Gerencias: ",response.data.data)
         }catch (error) {
             if(error instanceof CustomError){
                 const errorData = error.toJSON();
@@ -81,7 +80,6 @@ export default function AsignarPantalla() {
                 timeout: 3000 // timeout de 3 segundos
             })
             setSubgerencias(response.data.data);
-            console.log("SubGerencias: ",response.data.data)
         }catch (error) {
             if(error instanceof CustomError){
                 const errorData = error.toJSON();
@@ -112,6 +110,7 @@ export default function AsignarPantalla() {
     const traeDepartamentos = async () => {
         if (!selectedSubgerencia) return;
         try {
+            console.log("Traer Departamentos por Subgerencia");
             const response = await axios.post(`${import.meta.env.VITE_API_URL}/depto/getbyidsubgerencia`,{
                 "id":selectedSubgerencia
             }, {
@@ -120,8 +119,11 @@ export default function AsignarPantalla() {
                 },
                 timeout: 3000 // timeout de 3 segundos
             })
+            if(response.data.data.length === 0){
+                setDepartamentos([]);
+                return;
+            }
             setDepartamentos(response.data.data);
-            console.log("Departamentos: ",response.data.data)
         }catch (error) {
             if(error instanceof CustomError){
                 const errorData = error.toJSON();
@@ -153,7 +155,7 @@ export default function AsignarPantalla() {
         if (!selectedDepartamento) return;
         try {
             
-            const response = await axios.post(`${import.meta.env.VITE_API_URL}/servicio/getbydepartamento`,{
+            const response = await axios.post(`${import.meta.env.VITE_API_URL}/servicios/getbydeptocodigo`,{
                 "departamento": parseInt(selectedDepartamento)
             }, {
                 headers: {
@@ -161,7 +163,6 @@ export default function AsignarPantalla() {
                 },
                 timeout: 3000 // timeout de 3 segundos
             })
-            console.log(response.data.data)
             setServicios(response.data.data);
         }catch (error) {
             if(error instanceof CustomError){
@@ -194,7 +195,7 @@ export default function AsignarPantalla() {
         if (!selectedServicio) return;
         try {
             
-            const response = await axios.post(`${import.meta.env.VITE_API_URL}/proceso/getbyservicio`,{
+            const response = await axios.post(`${import.meta.env.VITE_API_URL}/procesos/getbyservicio`,{
                 "servicio": parseInt(selectedServicio)
             }, {
                 headers: {
@@ -297,7 +298,6 @@ export default function AsignarPantalla() {
                             <label className="block text-gray-700 text-sm font-medium mb-2" htmlFor='proceso'>Proceso</label>
                             <select id='proceso' name='proceso' className="w-full px-3 py-2 md:px-4 md:py-2 rounded-lg border border-gray-300 shadow-sm text-sm md:text-base placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-200" disabled={!selectedServicio}>
                                 <option value="">Seleccione un Proceso</option>
-                                <option key="newprocess" value="newprocess">Nuevo Proceso</option>
                                 {procesos.map(proceso => (
                                     <option key={proceso._id} value={proceso._id}>{proceso.nombre}</option>
                                 ))}

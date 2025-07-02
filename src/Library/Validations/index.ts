@@ -131,6 +131,23 @@ const IsBoolean = (value: any): boolean => {
     return false;
 };
 
+const IsName = (name: string) => {
+    // Verificar si el valor no es una cadena
+    if (typeof name !== 'string') {
+        console.error("The input is not a string");
+        return false;
+    }
+    // Eliminar espacios en blanco al inicio y al final
+    name = name.trim();
+    const regex = /^[a-zA-ZÁÉÍÓÚáéíóúñÑ0-9(),.\-]+( [a-zA-ZÁÉÍÓÚáéíóúñÑ0-9(),.\-]+)*$/;
+    // Verificar si el valor no cumple con la expresión regular
+    if (!regex.test(name)) {
+        console.error(`The input "${name}" is not a valid name`);
+        return false;
+    }
+    return true;
+}
+
 
 export{
     IsUsername,
@@ -142,4 +159,5 @@ export{
     IsPhone,
     IsRut,
     IsBoolean,
+    IsName
 }

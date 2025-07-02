@@ -35,18 +35,18 @@ export default function Navbar() {
             { label: 'Desarrollo', link: '#' },
             { label: 'Presupuesto', link: '#' },
             { label: 'Produccion', link: '#', menuItems:[
-                { label: 'Centralizado', link: '/centralizado', menuItems: [
-                    { label: 'Solicitudes', link: '/solicitudes', menuItems: [
+                { label: 'Centralizado', link: '#', menuItems: [
+                    { label: 'Solicitudes', link: '#', menuItems: [
                         { label: 'Crear Solicitud', link: '/crearsolicitud' },
                         { label: 'Revisar Solicitud', link: '/revisarsolicitud' },
                         { label: 'Finalizar Solicitud', link: '/finalizarsolicitud' },
                     ] },
-                    { label: 'Cuentas NT', link: '/cuentasnt', menuItems: [
+                    { label: 'Cuentas NT', link: '#', menuItems: [
                         { label: 'Crear Cuenta', link: '/crearcuentasnt'},
                         { label: 'Desbloquear Cuenta', link: '/desbloquearcuentasnt' },
                         { label: 'Suspender Cuenta', link: '/suspendercuentasnt'},
                     ] },
-                    { label: 'Cuentas Correo', link: '/cuentascorreo', menuItems: [
+                    { label: 'Cuentas Correo', link: '#', menuItems: [
                         { label: 'Crear Cuenta', link: '/crearcuentascorreo' },
                         { label: 'Desbloquear Cuenta', link: '/desbloquearcuentascorreo' },
                         { label: 'Suspender Cuenta', link: '/suspendercuentascorreo'},
@@ -64,13 +64,16 @@ export default function Navbar() {
                         { label: 'Asignar Proceso', link: '/asignarproceso' },
                     ]},
                 ]},
-                { label: 'Adquisiciones', link: '/adquisiciones', menuItems:[
+                { label: 'Adquisiciones', link: '#', menuItems:[
                     { label: 'Ingresos', link: '/ingresos' },
-                    { label: 'Proveedores', link: '/proveedores', menuItems: [
-                        { label: 'Crear Proveedor', link: '/crear_proveedor', menuItems: [] },
-                        { label: 'Consultar Proveedor', link: '/consultar_proveedor', menuItems: [] },
+                    { label: 'Categorías', link: '#', menuItems: [
+                        { label: 'Nueva', link: '/crear_categoria'}
                     ]},
-                    { label: 'Productos', link: '/productos', menuItems: [
+                    { label: 'Proveedores', link: '#', menuItems: [
+                        { label: 'Crear Proveedor', link: '/crear_proveedor' },
+                        { label: 'Consultar Proveedor', link: '/consultar_proveedor'},
+                    ]},
+                    { label: 'Productos', link: '#', menuItems: [
                         { label: 'Reciclar', link: '/reciclaje'},
                         { label: 'Crear Producto', link: '/crear_producto'},
                         { label: 'Consultar Producto', link: '/consultar_producto' },

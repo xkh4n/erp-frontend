@@ -4,9 +4,10 @@ import { useState, useEffect, useCallback } from 'react';
 import axios from 'axios';
 import { saveOutline, alertCircleOutline } from 'ionicons/icons'
 import { IonIcon } from '@ionic/react'
-import { CustomError } from '../../../../Library/Errores';
+import { CustomError, createValidationError } from '../../../../Library/Errores';
 import { useNavigate } from 'react-router-dom';
 import Checked from "../../../../Components/Checked";
+import { IsName } from "../../../../Library/Validations";
 
 
 
@@ -72,6 +73,11 @@ export default function CrearPantalla() {
     }, [navigate]);
 
     // Funciones de fetch para cargar los select
+    // Estas funciones se encargan de hacer las peticiones a la API y actualizar los estados correspondientes
+    // Se utilizan useCallback para evitar recrear las funciones en cada renderizado
+    // y así mejorar el rendimiento de la aplicación
+    // También se manejan los errores de manera centralizada con handleError
+    // Funcion para cargar los datos de las gerencias
     const fetchGerencias = useCallback(async () => {
         try {
             const response = await axios.post(`${import.meta.env.VITE_API_URL}/gerencia/todas`, {
@@ -84,6 +90,7 @@ export default function CrearPantalla() {
         }
     }, [handleError, navigate]);
 
+    // Funcion para cargar las subgerencias por ID de gerencia
     const fetchSubgerencias = useCallback(async (gerenciaId: string) => {
         try {
             const response = await axios.post(`${import.meta.env.VITE_API_URL}/subgerencia/poridgerencia`, {
@@ -98,6 +105,7 @@ export default function CrearPantalla() {
         }
     }, [handleError, navigate]);
 
+    // Funcion para cargar los departamentos por ID de subgerencia o todos si no se selecciona subgerencia
     const fetchDepartamentos = useCallback(async (subgerenciaId?: string) => {
         try {
             if (subgerenciaChecked && subgerenciaId) {
@@ -122,6 +130,7 @@ export default function CrearPantalla() {
         }
     }, [subgerenciaChecked, departamentoChecked, handleError, navigate]);
 
+    // Funcion para cargar los servicios por ID de departamento o todos si no se selecciona departamento
     const fetchServicios = useCallback(async () => {
         try {
             if (servicioChecked && !departamentoChecked) {
@@ -145,6 +154,25 @@ export default function CrearPantalla() {
             handleError(error, navigate);
         }
     }, [servicioChecked, departamentoChecked, selectedDepartamento, handleError, navigate]);
+
+    // Funcion para cargar los procesos por ID de servicio
+    const fechProcesos = useCallback(async () => {
+        try {
+            if (selectedServicio) {
+                const response = await axios.post(`${import.meta.env.VITE_API_URL}/procesos/getbyservicio`, {
+                    servicio: parseInt(selectedServicio)
+                }, {
+                    headers: { 'Content-Type': 'application/json' },
+                    timeout: 3000
+                });
+                setProcesos(response.data.data);
+            } else {
+                setProcesos([]);
+            }
+        } catch (error) {
+            handleError(error, navigate);
+        }
+    }, [selectedServicio, handleError, navigate]);
 
     // useEffect para cargar gerencias al inicio
     useEffect(() => {
@@ -172,6 +200,14 @@ export default function CrearPantalla() {
         fetchServicios();
     }, [servicioChecked, departamentoChecked, subgerenciaChecked, selectedDepartamento, fetchServicios]);
 
+    // useEffect para cargar procesos cuando cambia el servicio
+    // y se asegura de que se limpien los procesos al cambiar el servicio
+    useEffect(() => {
+        setSelectedProceso("");
+        setProcesos([]);
+        fechProcesos();
+    }, [selectedServicio, fechProcesos]);
+
     // Limpia procesos y pantalla cuando cambia el servicio
     useEffect(() => {
         setSelectedProceso("");
@@ -180,55 +216,27 @@ export default function CrearPantalla() {
     }, [selectedServicio]);
 
 
-    const checkValidation = async () => {
-        try {
-            if(subgerenciaChecked === true && departamentoChecked === true && servicioChecked === true){
-                // No se hace nada, ya que todos los campos están seleccionados
-                alert("Todos los campos están seleccionados, no se requiere validación adicional.");
-            }
-            if(subgerenciaChecked === false && departamentoChecked === true && servicioChecked === true){
-                // No se hace nada, ya que todos los campos están seleccionados
-                alert("Departamento y Servicio Seleccionado, SubGerencia NO.");
-            }
-            if(subgerenciaChecked === false && departamentoChecked === false && servicioChecked === true){
-                // No se hace nada, ya que todos los campos están seleccionados
-                setSelectedGerencia(selectedGerencia);
-                setSelectedSubgerencia(""); // Si no se selecciona subgerencia, se toma la gerencia
-                setSelectedDepartamento(""); // Si no se selecciona departamento, se toma la subgerencia
-                setSelectedServicio(selectedServicio); // Si no se selecciona servicio, se toma el departamento
-                setSelectedProceso(selectedProceso); // Si no se selecciona proceso, se toma el servicio
-                setPantalla(pantalla); // Si no se selecciona pantalla, se toma la gerencia
-                alert("Sólo Servicio Seleccionado.");
-            }
-            if(subgerenciaChecked === true && departamentoChecked === false && servicioChecked === true){
-                // No se hace nada, ya que todos los campos están seleccionados
-                alert("SubGerencia y Servicio Seleccionada, Departamento NO.");
-            }
-            if(subgerenciaChecked === true && departamentoChecked === false && servicioChecked === false){
-                // No se hace nada, ya que todos los campos están seleccionados
-                alert("SubGerencia Seleccionada, Departamento y Servicio NO.");
-            }
-            if(subgerenciaChecked === true && departamentoChecked === true && servicioChecked === false){
-                // No se hace nada, ya que todos los campos están seleccionados
-                alert("SubGerencia y Departamento Seleccionada, Servicio NO.");
-            }
-            if(subgerenciaChecked === false && departamentoChecked === true && servicioChecked === false){
-                // No se hace nada, ya que todos los campos están seleccionados
-                alert("Departamento Seleccionado, SubGerencia y Servicio NO.");
-            }
-            if(subgerenciaChecked === false && departamentoChecked === false && servicioChecked === false){
-                // No se hace nada, ya que todos los campos están seleccionados
-                alert("Ningún campo seleccionado.");
-            }
-        }catch (error) {
-            handleError(error, navigate);
-        }
-    }
     // Función para manejar el envío del formulario
     const handlerSubmit = async () => {
         try {
-            checkValidation();
-            /*
+            if(!IsName(pantalla)){
+                throw createValidationError("El nombre de la pantalla no es válido. Debe contener al menos 3 caracteres y no puede estar vacío.");
+            }
+            if(!IsName(selectedGerencia)){
+                throw createValidationError("Debe seleccionar una Gerencia válida.");
+            }
+            if(!IsName(selectedSubgerencia) && subgerenciaChecked){
+                throw createValidationError("Debe seleccionar una SubGerencia válida o desmarcar la opción de SubGerencia.");
+            }
+            if(!IsName(selectedDepartamento) && (departamentoChecked || subgerenciaChecked)){
+                throw createValidationError("Debe seleccionar un Departamento válido o desmarcar la opción de Departamento.");
+            }
+            if(!IsName(selectedServicio) && servicioChecked){
+                throw createValidationError("Debe seleccionar un Servicio válido o desmarcar la opción de Servicio.");
+            }
+            if(!IsName(selectedProceso)){
+                throw createValidationError("Debe seleccionar un Proceso válido.");
+            }
             const datosEnviar = {
                 "gerencia": selectedGerencia, //_id
                 "subgerencia": selectedSubgerencia, //_id
@@ -237,6 +245,7 @@ export default function CrearPantalla() {
                 "proceso": selectedProceso, //_id
                 "pantalla": pantalla
             };
+            console.warn("Datos a enviar: ", datosEnviar);
             // Enviar datos al backend
             
             await axios.put(`${import.meta.env.VITE_API_URL}/vista/nueva`, datosEnviar, {
@@ -245,7 +254,6 @@ export default function CrearPantalla() {
                 },
                 timeout: 3000 // timeout de 3 segundos
             });
-            */
             // Limpiar los campos del formulario
             setGerencias([]);
             setSelectedGerencia('');
@@ -362,7 +370,6 @@ export default function CrearPantalla() {
                             <label className="block text-gray-700 text-sm font-medium mb-2" htmlFor='proceso'>Proceso</label>
                             <select id='proceso' name='proceso' className="w-full px-3 py-2 md:px-4 md:py-2 rounded-lg border border-gray-300 shadow-sm text-sm md:text-base placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-200" onChange={e => setSelectedProceso(e.target.value)} disabled={!selectedServicio}>
                                 <option value="">Seleccione un Proceso</option>
-                                <option key="newprocess" value="newprocess">Nuevo Proceso</option>
                                 {procesos.map(proceso => (
                                     <option key={proceso._id} value={proceso._id}>{proceso.nombre}</option>
                                 ))}

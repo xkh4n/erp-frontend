@@ -14,6 +14,7 @@ import CrearProducto from "../Views/Adquisiciones/Productos/Crear";
 import CrearProveedor from "../Views/Adquisiciones/Proveedor/Crear";
 import IngresoProducto from "../Views/Adquisiciones/Productos/Ingreso";
 import CrearSolicitud from "../Views/Adquisiciones/Solicitud/Crear";
+import CrearCategoria from "../Views/Adquisiciones/Categorias/Nueva";
 
 export default function index() {
     return (
@@ -31,6 +32,7 @@ export default function index() {
                     <Route path="/crear_producto" element={<CrearProducto />} />
                     <Route path="/ingresos" element={<IngresoProducto />} />
                     <Route path="/crear_solicitud" element={<CrearSolicitud />} />
+                    <Route path="/crear_categoria" element={<CrearCategoria />} />
                 </Route>
                 <Route element={<LoginLayout />}>
                     <Route path="/login" element={<Login />} />

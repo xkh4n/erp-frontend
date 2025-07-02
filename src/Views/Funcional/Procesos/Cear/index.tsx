@@ -5,6 +5,7 @@ import { IonIcon } from '@ionic/react'
 import { CustomError, createValidationError } from '../../../../Library/Errores';
 import { useNavigate } from 'react-router-dom';
 import { ToastContainer, toast } from "react-toastify";
+import { IsParagraph } from '../../../../Library/Validations'
 import "react-toastify/dist/ReactToastify.css";
 
 
@@ -27,14 +28,15 @@ export default function CrearProceso() {
     const [servicios, setServicios] = useState<Respuesta[]>([]);
 
     const [description, setDescription] = useState("");
-    const [procesos, setProcesos] = useState("");
+    const [nombre, setNombre] = useState("");
+    const [lasProceso, setLastProceso] = useState("");
 
-    const [guardado, setGuardado] = useState(false);
 
     const [selectedGerencia, setSelectedGerencia] = useState('');
     const [selectedSubgerencia, setSelectedSubgerencia] = useState('');
     const [selectedDepartamento, setSelectedDepartamento] = useState('');
     const [selectedServicio, setSelectedServicio] = useState('');
+
 
 
     const traeGerencias = async () => {
@@ -197,32 +199,81 @@ export default function CrearProceso() {
         traerServicios();
     }, [selectedDepartamento]);
 
-
-    useEffect(() => {
-        if(guardado) {
-            navigate('/');;
-        }
-    })
-    const handlerSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
-        e.preventDefault()
-        const formData = new FormData(e.currentTarget)
+    const traeLastProcesos = async () => {
         try {
-            const pantalla = formData.get('pantalla')?.toString();
+            const response = await axios.post(`${import.meta.env.VITE_API_URL}/procesos/getlastproceso`, {
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                timeout: 3000 // timeout de 3 segundos
+            });
+            setLastProceso(response.data.data.codigo);
+            console.warn("Respuesta del servidor:", lasProceso);
+        } catch (error) {
+            if (error instanceof CustomError) {
+                const errorData = error.toJSON();
+                navigate('/error', {
+                    state: {
+                        code: errorData.code,
+                        message: errorData.message,
+                        detail: errorData.details
+                    }
+                });
+            }
+            if (error instanceof axios.AxiosError) {
+                navigate('/error', {
+                    state: {
+                        code: error.response?.status || 500,
+                        message: error.message || 'Network Error',
+                        detail: error.response?.statusText || 'Unknown error'
+                    }
+                });
+                console.log(error.response);
+            }
+        }
+    }
+
+    const handlerSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
+        e.preventDefault();
+        try {
             if(selectedGerencia === '') throw createValidationError('La Gerencia no puede estar vacía', 'Debe Seleccionar una Gerencia');
             if(selectedSubgerencia === '') throw createValidationError('La Subgerencia no puede estar vacía', 'Debe Seleccionar una Subgerencia');
             if(selectedDepartamento === '') throw createValidationError('El Departamento no puede estar vacío', 'Debe Seleccionar un Departamento');
             if(selectedServicio === '') throw createValidationError('El Servicio no puede estar vacío', 'Debe Seleccionar un Servicio');
-            if(formData.get('proceso')?.toString() === '') throw createValidationError('El Proceso no puede estar vacío', 'Debe Seleccionar un Proceso');
-            if(!pantalla) throw createValidationError('El nombre de la Pantalla no puede estar Vacío', 'No se ha ingresado un nombre para la pantalla');
-            const datosEnviar = {
-                gerencia: selectedGerencia,
-                subgerencia: selectedSubgerencia,
-                departamento: departamentos.find(depto => depto.codigo === parseInt(selectedDepartamento))?._id,
-                servicio: servicios.find(servicio => servicio.codigo === parseInt(selectedServicio))?._id,
-                pantalla:pantalla
+            if(!IsParagraph(nombre)) {
+                throw createValidationError('El nombre del Proceso no es válido', 'Debe ingresar un nombre de Proceso válido');
             }
+            await traeLastProcesos();
+            
+            // Extraer la parte numérica del último código y incrementar
+            let nuevoCodigo = "PROC001"; // Código por defecto si no hay códigos anteriores
+            if (lasProceso) {
+                // Extraer los números del código (ej: "PROC030" -> "030")
+                const numeroMatch = lasProceso.match(/(\d+)/);
+                if (numeroMatch) {
+                    const numeroActual = parseInt(numeroMatch[1]);
+                    const numeroSiguiente = numeroActual + 1;
+                    // Formatear con ceros a la izquierda para mantener 3 dígitos
+                    const numeroFormateado = numeroSiguiente.toString().padStart(3, '0');
+                    nuevoCodigo = `PROC${numeroFormateado}`;
+                }
+            }
+            
+            const datosEnviar = 
+                [
+                    {
+                        codigo: nuevoCodigo,
+                        gerencia: selectedGerencia,
+                        subgerencia: selectedSubgerencia,
+                        departamento: selectedDepartamento,
+                        servicio: parseInt(selectedServicio),
+                        nombre:nombre,
+                        estado: true,
+                        descripcion: description
+                    }
+                ];
             // Enviar datos al backend
-            const response = await axios.put(`${import.meta.env.VITE_API_URL}/vista/nueva`, datosEnviar, {
+            await axios.put(`${import.meta.env.VITE_API_URL}/procesos/nuevo`, datosEnviar, {
                 headers: {
                     'Content-Type': 'application/json'
                 },
@@ -236,9 +287,20 @@ export default function CrearProceso() {
                 pauseOnHover: true,
                 draggable: true
             });
-            setGuardado(true);
+            // Limpiar los campos del formulario
+            setSelectedGerencia('');
+            setSelectedSubgerencia('');
+            setSelectedDepartamento('');
+            setSelectedServicio('');
+            setDescription('');
+            setNombre('');
+            // Traer nuevamente las gerencias, subgerencias, departamentos y servicios
+            await traeGerencias();
+            await traeSubGerencias();
+            await traeDepartamentos();
+            await traerServicios();
             // Redireccionar al usuario a la página de lista de pantallas
-            console.log("Resultado: ",response.data.data)
+            navigate('/crearproceso');
         }catch (error) {
             if (error instanceof Error) {
                 toast.error(`Error: ${error.message}`, {
@@ -270,8 +332,8 @@ export default function CrearProceso() {
             <div className='w-full max-w-[95%] mx-auto px-4 sm:px-6 lg:px-8'>
                 <h1 className='text-xl md:text-2xl lg:text-3xl font-bold mb-6 text-center text-gray-800'>Creación de Proceso</h1>
                 <form className='w-full' onSubmit={handlerSubmit}>
-                    <div className='grid grid-cols-1 max-[799px]:grid-cols-1 min-[800px]:grid-cols-6 min-[1000px]:grid-cols-10 min-[1200px]:grid-cols-12 min-[1400px]:grid-cols-12 gap-4'>
-                        <div className="w-full max-[799px]:w-full min-[800px]:col-span-3 min-[1000px]:col-span-5 min-[1200px]:col-span-6 min-[1400px]:col-span-4">
+                    <div className='grid grid-cols-1 max-[799px]:grid-cols-1 min-[800px]:grid-cols-6 min-[1000px]:grid-cols-9 min-[1200px]:grid-cols-12 min-[1400px]:grid-cols-12 gap-4'>
+                        <div className="w-full max-[799px]:w-full min-[800px]:col-span-3 min-[1000px]:col-span-3 min-[1200px]:col-span-4 min-[1400px]:col-span-3">
                             <label className="block text-gray-700 text-sm font-medium mb-2" htmlFor='gerencia'>Gerencia</label>
                             <select id='gerencia' name='gerencia' className="w-full px-3 py-2 md:px-4 md:py-2 rounded-lg border border-gray-300 shadow-sm text-sm md:text-base placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-200" onChange={e => setSelectedGerencia(e.target.value)}>
                                 <option value="">Seleccione una Gerencia</option>
@@ -280,7 +342,7 @@ export default function CrearProceso() {
                                 ))}
                             </select>
                         </div>
-                        <div className="w-full max-[799px]:w-full min-[800px]:col-span-3 min-[1000px]:col-span-5 min-[1200px]:col-span-6 min-[1400px]:col-span-4">
+                        <div className="w-full max-[799px]:w-full min-[800px]:col-span-3 min-[1000px]:col-span-3 min-[1200px]:col-span-4 min-[1400px]:col-span-3">
                             <label className="block text-gray-700 text-sm font-medium mb-2" htmlFor='subgerencia'>Subgerencia</label>
                             <select id='subgerencia' name='subgerencia' className="w-full px-3 py-2 md:px-4 md:py-2 rounded-lg border border-gray-300 shadow-sm text-sm md:text-base placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-200" onChange={e => setSelectedSubgerencia(e.target.value)} disabled={!selectedGerencia}>
                                 <option value="">Seleccione una Subgerencia</option>
@@ -289,7 +351,7 @@ export default function CrearProceso() {
                                 ))}
                             </select>
                         </div>
-                        <div className="w-full max-[799px]:w-full min-[800px]:col-span-3 min-[1000px]:col-span-5 min-[1200px]:col-span-6 min-[1400px]:col-span-4">
+                        <div className="w-full max-[799px]:w-full min-[800px]:col-span-3 min-[1000px]:col-span-3 min-[1200px]:col-span-4 min-[1400px]:col-span-3">
                             <label className="block text-gray-700 text-sm font-medium mb-2" htmlFor='departamento'>Departamento</label>
                             <select id='departamento' name='departamento' className="w-full px-3 py-2 md:px-4 md:py-2 rounded-lg border border-gray-300 shadow-sm text-sm md:text-base placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-200" onChange={e => setSelectedDepartamento(e.target.value)} disabled={!selectedSubgerencia}>
                                 <option value="">Seleccione un Departamento</option>
@@ -298,26 +360,26 @@ export default function CrearProceso() {
                                 ))}
                             </select>
                         </div>
-                        <div className="w-full max-[799px]:w-full min-[800px]:col-span-3 min-[1000px]:col-span-5 min-[1200px]:col-span-6 min-[1400px]:col-span-4">
+                        <div className="w-full max-[799px]:w-full min-[800px]:col-span-3 min-[1000px]:col-span-4 min-[1200px]:col-span-3 min-[1400px]:col-span-3">
                             <label className="block text-gray-700 text-sm font-medium mb-2" htmlFor='servicio'>Servicio</label>
                             <select id='servicio' name='servicio' className="w-full px-3 py-2 md:px-4 md:py-2 rounded-lg border border-gray-300 shadow-sm text-sm md:text-base placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-200" onChange={e => setSelectedServicio(e.target.value)} disabled={!selectedDepartamento}>
                                 <option value="">Seleccione un Servicio</option>
                                 {servicios.map(servicio => (
-                                    <option key={servicio._id} value={servicio._id}>{servicio.nombre}</option>
+                                    <option key={servicio._id} value={servicio.codigo}>{servicio.nombre}</option>
                                 ))}
                             </select>
                         </div>
-                        <div className="w-full max-[799px]:w-full min-[800px]:col-span-3 min-[1000px]:col-span-5 min-[1200px]:col-span-6 min-[1400px]:col-span-4">
+                        <div className="w-full max-[799px]:w-full min-[800px]:col-span-3 min-[1000px]:col-span-5 min-[1200px]:col-span-3 min-[1400px]:col-span-4">
                             <label className="block text-gray-700 text-sm font-medium mb-2" htmlFor='proceso'>Nombre del Proceso</label>
-                            <input id='proceso' name='proceso' type="text" className="w-full px-3 py-2 md:px-4 md:py-2 rounded-lg border border-gray-300 shadow-sm text-sm md:text-base placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-200" value={procesos} onChange={e => setProcesos(e.target.value)} />
+                            <input id='proceso' name='proceso' type="text" className="w-full px-3 py-2 md:px-4 md:py-2 rounded-lg border border-gray-300 shadow-sm text-sm md:text-base placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-200" value={nombre} onChange={e => setNombre(e.target.value.toUpperCase())} />
                         </div>
-                        <div className="w-full max-[799px]:w-full min-[800px]:col-span-3 min-[1000px]:col-span-5 min-[1200px]:col-span-6 min-[1400px]:col-span-4">
+                        <div className="w-full max-[799px]:w-full min-[800px]:col-span-3 min-[1000px]:col-span-9 min-[1200px]:col-span-6 min-[1400px]:col-span-8">
                             <label className="block text-gray-700 text-sm font-medium mb-2" htmlFor='descripcion'>Descripción del Proceso</label>
-                            <input id='descripcion' name='descripcion' type="text" className="w-full px-3 py-2 md:px-4 md:py-2 rounded-lg border border-gray-300 shadow-sm text-sm md:text-base placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-200" value={description} onChange={e => setDescription(e.target.value)} />
+                            <input id='descripcion' name='descripcion' type="text" className="w-full px-3 py-2 md:px-4 md:py-2 rounded-lg border border-gray-300 shadow-sm text-sm md:text-base placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-200" value={description} onChange={e => setDescription(e.target.value.toUpperCase())} />
                         </div>
                     </div>
-                    <div className='flex flex-1 row-auto'>
-                        <button type='submit' className="flex justify-center mt-5 items-center bg-blue-950 hover:bg-red-600 shadow-red-600/50 text-white focus:outline-none focus:ring py-2 w-full rounded-full shadow-xl hover:shadow-blue-800/50 transition delay-10 duration-300 ease-in-out hover:translate-y-1">
+                    <div className='flex flex-1 row-auto justify-center items-center mt-6'>
+                        <button type='submit' className="flex justify-center mt-5 items-center bg-blue-950 hover:bg-red-600 shadow-red-600/50 text-white focus:outline-none focus:ring py-2 w-80 rounded-full shadow-xl hover:shadow-blue-800/50 transition delay-10 duration-300 ease-in-out hover:translate-y-1">
                             <IonIcon icon={saveOutline} className="w-5 h-5" />
                             <p className="ml-1 text-lg">Guardar</p>
                         </button>
