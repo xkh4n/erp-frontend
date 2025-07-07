@@ -5,8 +5,7 @@ import { IsParagraph } from "../../../../Library/Validations";
 import {CustomError,} from "../../../../Library/Errores";
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
-import { toast, ToastContainer } from "react-toastify";
-import "react-toastify/dist/ReactToastify.css";
+import { Toast, showApprovalToast, showErrorToast } from '../../../../Components/Toast';
 
 
 
@@ -53,11 +52,17 @@ export default function CrearCategoria() {
 				`${import.meta.env.VITE_API_URL}/categoria/last`
 			);
 			
+			// Verificar si hay datos válidos en la respuesta
+			if (!response.data || !response.data.data || !response.data.data.codigo) {
+				// Si no hay categorías, empezar con TIP001
+				return "TIP001";
+			}
+			
 			// Verificar el formato del código y extraer la parte numérica
 			const codigoCompleto = response.data.data.codigo;
 			let codigoNumerico = "";
 			
-			if (codigoCompleto.startsWith("TIP")) {
+			if (codigoCompleto.startsWith("CAT")) {
 				// Si el formato es TIP004, extraer solo el número
 				codigoNumerico = codigoCompleto.substring(3); // "004"
 			} else {
@@ -67,13 +72,21 @@ export default function CrearCategoria() {
 			
 			// Convertir a entero, sumar 1, y formatear con ceros a la izquierda
 			const numeroActual = parseInt(codigoNumerico, 10);
+			
+			// Verificar si el número es válido
+			if (isNaN(numeroActual)) {
+				// Si no se puede convertir a número, empezar con TIP001
+				return "CAT001";
+			}
+			
 			const numeroSiguiente = numeroActual + 1;
-			const codigoNuevo = `TIP${numeroSiguiente.toString().padStart(3, '0')}`;
+			const codigoNuevo = `CAT${numeroSiguiente.toString().padStart(3, '0')}`;
 			
 			return codigoNuevo; // Retornar el nuevo código completo
 		} catch (error) {
-			handleError(error, navigate);
-			return ""; // Retornar string vacío en caso de error
+			// Si hay error en el request, empezar con TIP001
+			console.warn("Error al obtener la última categoría, usando código por defecto:", error);
+			return "CAT001";
 		}
 	}
 
@@ -109,39 +122,42 @@ export default function CrearCategoria() {
 		// No limpiar las categorías aquí para mantener el select poblado
 	}
 
-	const getToastConfig = (message: string, type: "success" | "error") => {
-		return toast[type](message, {
-			// Configuración del Toast
-			position: "top-right",
-			autoClose: 3000,
-			hideProgressBar: false,
-			closeOnClick: true,
-			pauseOnHover: true,
-			draggable: true
-		});
-	}
 
 	const handlerSubmit = async () => {
 		try {
 			if(!IsParagraph(nombreCategoria) || nombreCategoria === "") {
-				getToastConfig(`Error al Validar el Nombre de la Categoría: ${nombreCategoria}`, "error");
+				showErrorToast(`Error al Validar el Nombre de la Categoría: ${nombreCategoria}`);
 				return;
 			}
 			if(!IsParagraph(descripcion) || descripcion === "") {
-				getToastConfig(`Error al Validar la Descripción de la Categoría: ${descripcion}`, "error");
+				showErrorToast(`Error al Validar la Descripción de la Categoría: ${descripcion}`);
 				return;
 			}
 			if (selectedCategoria === "") {
-				getToastConfig(`Debe seleccionar una categoría: ${selectedCategoria}`, "error");
+				showErrorToast(`Debe seleccionar una categoría: ${selectedCategoria}`);
 				return;
 			}
 			if( tipoCategoria === "") {
-				getToastConfig(`Debe seleccionar un tipo de categoría: ${tipoCategoria}`, "error");
+				showErrorToast(`Debe seleccionar un tipo de categoría: ${tipoCategoria}`);
 				return;
 			}
 			
-			// Obtener el código antes de crear el array
-			const codigoObtenido = await getLastCategoria();
+			// Determinar el código según la selección
+			let codigoObtenido = "";
+			
+			if (selectedCategoria === "new") {
+				// Si es nueva categoría, obtener el próximo código disponible
+				codigoObtenido = await getLastCategoria();
+			} else {
+				// Si es categoría existente, usar el código seleccionado
+				codigoObtenido = selectedCategoria;
+			}
+			
+			// Validar que el código obtenido no esté vacío
+			if (!codigoObtenido || codigoObtenido === "") {
+				showErrorToast(`Error al generar el código de la categoría: ${codigoObtenido}`);
+				return;
+			}
 			
 			const datosEnviar = [
 				{
@@ -165,17 +181,17 @@ export default function CrearCategoria() {
 			clearFields();
 			// Recargar las categorías después de guardar exitosamente
 			await fetchCategorias();
-			getToastConfig("¡Categoría guardada exitosamente!", "success");
+			showApprovalToast("Categoría");
 			navigate("/crear_categoria"); // Redirige a la página de productos después de guardar el producto
 		} catch (error) {
-			getToastConfig("Error al guardar la Categoría", "error");
+			showErrorToast("Error al guardar la Categoría");
 			handleError(error, navigate);
 		}
 	};
 
 	return (
 		<div className="flex flex-col items-center justify-center h-max bg-gray-200 p-4 md:p-5 lg:p-6">
-			<ToastContainer aria-label="Notificaciones de la aplicación" />
+			<Toast autoClose={3000} theme="dark" className="custom-toast"/>
 			<div className="w-full max-w-[95%] mx-auto px-4 sm:px-6 lg:px-8">
 				<h1 className="text-xl md:text-2xl lg:text-3xl font-bold mb-6 text-center text-gray-800">
                     Nueva Categoría
