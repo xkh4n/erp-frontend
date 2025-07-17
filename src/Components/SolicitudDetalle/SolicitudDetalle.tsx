@@ -156,6 +156,9 @@ export const SolicitudDetalle: React.FC<SolicitudDetalleProps> = ({
                                             Cantidad
                                         </th>
                                         <th className="px-4 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider border-b">
+                                            Estado
+                                        </th>
+                                        <th className="px-4 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider border-b">
                                             Acciones
                                         </th>
                                     </tr>
@@ -163,7 +166,7 @@ export const SolicitudDetalle: React.FC<SolicitudDetalleProps> = ({
                                 <tbody className="bg-white divide-y divide-gray-200">
                                     {loading ? (
                                         <tr>
-                                            <td colSpan={5} className="px-4 py-8 text-center text-gray-500">
+                                            <td colSpan={6} className="px-4 py-8 text-center text-gray-500">
                                                 <div className="flex justify-center items-center">
                                                     <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-blue-500 mr-2"></div>
                                                     Cargando detalles...
@@ -194,30 +197,58 @@ export const SolicitudDetalle: React.FC<SolicitudDetalleProps> = ({
                                                     {item.cantidad || 0}
                                                 </td>
                                                 <td className="px-4 py-3 text-center border-b">
+                                                    <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${
+                                                        item.estado === 'aprobado' 
+                                                            ? 'bg-green-100 text-green-800'
+                                                            : item.estado === 'rechazado'
+                                                            ? 'bg-red-100 text-red-800'
+                                                            : 'bg-yellow-100 text-yellow-800'
+                                                    }`}>
+                                                        {item.estado || 'pendiente'}
+                                                    </span>
+                                                </td>
+                                                <td className="px-4 py-3 text-center border-b">
                                                     <div className="flex justify-center space-x-2">
-                                                        <button
-                                                            onClick={() => onAprobarItem(item._id || item.id || '')}
-                                                            className="inline-flex items-center px-3 py-1 border border-transparent text-xs font-medium rounded-md text-white bg-green-500 hover:bg-green-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500 transition-colors"
-                                                            title="Aprobar item"
-                                                        >
-                                                            <IonIcon icon={checkmarkCircle} className="w-4 h-4 mr-1" />
-                                                            Aprobar
-                                                        </button>
-                                                        <button
-                                                            onClick={() => onRechazarItem(item._id || item.id || '')}
-                                                            className="inline-flex items-center px-3 py-1 border border-transparent text-xs font-medium rounded-md text-white bg-red-500 hover:bg-red-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500 transition-colors"
-                                                            title="Rechazar item"
-                                                        >
-                                                            <IonIcon icon={closeCircle} className="w-4 h-4 mr-1" />
-                                                            Rechazar
-                                                        </button>
+                                                        {solicitud.estado === 'pendiente' ? (
+                                                            <>
+                                                                {item.estado !== 'aprobado' && (
+                                                                    <button
+                                                                        onClick={() => onAprobarItem(item._id || item.id || '')}
+                                                                        className="inline-flex items-center px-3 py-1 border border-transparent text-xs font-medium rounded-md text-white bg-green-500 hover:bg-green-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500 transition-colors"
+                                                                        title="Aprobar producto"
+                                                                    >
+                                                                        <IonIcon icon={checkmarkCircle} className="w-4 h-4 mr-1" />
+                                                                        Aprobar
+                                                                    </button>
+                                                                )}
+                                                                {item.estado !== 'rechazado' && (
+                                                                    <button
+                                                                        onClick={() => onRechazarItem(item._id || item.id || '')}
+                                                                        className="inline-flex items-center px-3 py-1 border border-transparent text-xs font-medium rounded-md text-white bg-red-500 hover:bg-red-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500 transition-colors"
+                                                                        title="Rechazar producto"
+                                                                    >
+                                                                        <IonIcon icon={closeCircle} className="w-4 h-4 mr-1" />
+                                                                        Rechazar
+                                                                    </button>
+                                                                )}
+                                                                {(item.estado === 'aprobado' || item.estado === 'rechazado') && (
+                                                                    <span className="text-xs text-gray-500 py-1">
+                                                                        {item.estado === 'aprobado' ? 'Ya aprobado' : 'Ya rechazado'}
+                                                                    </span>
+                                                                )}
+                                                            </>
+                                                        ) : (
+                                                            <span className="text-xs text-gray-500 py-1">
+                                                                {solicitud.estado === 'aprobado' ? 'Solicitud aprobada' : 'Solicitud rechazada'}
+                                                            </span>
+                                                        )}
                                                     </div>
                                                 </td>
                                             </tr>
                                         ))
                                     ) : (
                                         <tr>
-                                            <td colSpan={5} className="px-4 py-8 text-center text-gray-500">
+                                            <td colSpan={6} className="px-4 py-8 text-center text-gray-500">
                                                 {!loading && (!solicitud.detalles || solicitud.detalles.length === 0) 
                                                     ? 'No hay detalles disponibles para esta solicitud'
                                                     : ''

@@ -3,6 +3,7 @@ import axios from 'axios';
 import { trashOutline, checkmarkCircle, createOutline } from "ionicons/icons";
 import { IonIcon } from "@ionic/react";
 import SolicitudDetalle from '../../../../Components/SolicitudDetalle/SolicitudDetalle';
+import { Toast, showApprovalToast, showRejectionToast, showErrorToast, showInfoToast } from '../../../../Components/Toast';
 
 interface DetalleItem {
     _id?: string;
@@ -77,9 +78,8 @@ export default function SolicitudView() {
                 setLoading(true);
                 const response = await axios.post(`${import.meta.env.VITE_API_URL}/solicitud/solicitudes`);
                 setSolicitudes(response.data.data);
-                console.table(response.data.data);
             } catch (error) {
-                console.error("Error fetching solicitudes:", error);
+                showErrorToast(`Error fetching solicitudes: ${error}`);
             } finally {
                 setLoading(false);
             }
@@ -106,9 +106,8 @@ export default function SolicitudView() {
             
             setSelectedSolicitud(solicitudConDetalles);
         } catch (error) {
-            console.error('Error al obtener detalles de la solicitud:', error);
             // Mostrar mensaje de error pero mantener el popup abierto
-            alert('Error al cargar los detalles de la solicitud');
+            showErrorToast(`Error al obtener detalles de la solicitud: ${error}`);
         } finally {
             setLoadingDetalle(false);
         }
@@ -119,54 +118,195 @@ export default function SolicitudView() {
         setSelectedSolicitud(null);
     };
 
+    const handleAprobarSolicitud = async (solicitud: Solicitud) => {
+        try {
+            // Aprobar toda la solicitud y todos sus productos
+            const response = await axios.patch(`${import.meta.env.VITE_API_URL}/solicitud/aprobar`, {
+                id: solicitud._id || solicitud.id
+            });
+            
+            if (response.data.codigo === 200) {
+                // Actualizar el estado local de la solicitud
+                setSolicitudes(prevSolicitudes => 
+                    prevSolicitudes.map(s => 
+                        s._id === solicitud._id 
+                            ? { ...s, estado: 'aprobado' }
+                            : s
+                    )
+                );
+                showApprovalToast(`Solicitud aprobada exitosamente: ${response.data.mensaje || ''}`);
+            }
+        } catch (error) {
+            showErrorToast(`Error al aprobar solicitud: ${error}`);
+            alert('Error al aprobar la solicitud');
+        }
+    };
+
+    const handleRechazarSolicitud = async (solicitud: Solicitud) => {
+        try {
+            // Confirmar acción
+            if (!confirm('¿Está seguro de rechazar toda la solicitud? Esta acción no se puede deshacer.')) {
+                return;
+            }
+
+            // Rechazar toda la solicitud y todos sus productos
+            const response = await axios.patch(`${import.meta.env.VITE_API_URL}/solicitud/rechazar`, {
+                id: solicitud._id || solicitud.id
+            });
+            
+            if (response.data.codigo === 200) {
+                // Actualizar el estado local de la solicitud
+                setSolicitudes(prevSolicitudes => 
+                    prevSolicitudes.map(s => 
+                        s._id === solicitud._id 
+                            ? { ...s, estado: 'rechazado' }
+                            : s
+                    )
+                );
+                showRejectionToast(`Solicitud rechazada exitosamente ${response.data.data}`);
+            }
+        } catch (error) {
+            showErrorToast(`Error al rechazar solicitud: ${error}`);
+            alert('Error al rechazar la solicitud');
+        }
+    };
+
     const handleAprobarItem = async (itemId: string) => {
         try {
-            // Aquí puedes agregar la lógica para aprobar un item específico
-            console.log('Aprobando item:', itemId);
-            // Ejemplo de llamada a la API:
-            // await axios.put(`${import.meta.env.VITE_API_URL}/solicitud/item/${itemId}/aprobar`);
-            // Actualizar el estado o recargar los datos
+            // Aprobar un producto específico
+            const response = await axios.patch(`${import.meta.env.VITE_API_URL}/solicitud/item/aprobar`, {
+                id: itemId
+            },{
+                headers: {
+                    'Content-Type': 'application/json'
+                }
+            });
+            if (response.data.codigo === 200) {
+                // Actualizar el detalle en la solicitud seleccionada
+                if (selectedSolicitud) {
+                    const solicitudActualizada = {
+                        ...selectedSolicitud,
+                        detalles: selectedSolicitud.detalles?.map(detalle => 
+                            detalle._id === itemId 
+                                ? { ...detalle, estado: 'aprobado' }
+                                : detalle
+                        )
+                    };
+                    
+                    // Verificar si hay al menos un producto aprobado para cambiar estado de solicitud
+                    const tieneAprobados = solicitudActualizada.detalles?.some(d => d.estado === 'aprobado');
+                    if (tieneAprobados) {
+                        solicitudActualizada.estado = 'aprobado';
+                        
+                        // Actualizar también en la lista principal
+                        setSolicitudes(prevSolicitudes => 
+                            prevSolicitudes.map(s => 
+                                s._id === selectedSolicitud._id 
+                                    ? { ...s, estado: 'aprobado' }
+                                    : s
+                            )
+                        );
+                    }
+                    
+                    setSelectedSolicitud(solicitudActualizada);
+                }
+                showInfoToast(`Producto aprobado exitosamente ${response.data.data}`);
+            }
         } catch (error) {
-            console.error('Error al aprobar item:', error);
+            showErrorToast(`Error al aprobar producto: ${error}`);
+            alert('Error al aprobar el producto');
         }
     };
 
     const handleRechazarItem = async (itemId: string) => {
         try {
-            // Aquí puedes agregar la lógica para rechazar un item específico
-            console.log('Rechazando item:', itemId);
-            // Ejemplo de llamada a la API:
-            // await axios.put(`${import.meta.env.VITE_API_URL}/solicitud/item/${itemId}/rechazar`);
-            // Actualizar el estado o recargar los datos
+            // Confirmar acción
+            if (!confirm('¿Está seguro de rechazar este producto?')) {
+                return;
+            }
+
+            // Rechazar un producto específico
+            const response = await axios.patch(`${import.meta.env.VITE_API_URL}/solicitud/item/rechazar`, {
+                id: itemId
+            },{
+                headers: {
+                    'Content-Type': 'application/json'
+                }
+            });
+            
+            if (response.data.codigo === 200) {
+                // Actualizar el detalle en la solicitud seleccionada
+                if (selectedSolicitud) {
+                    const solicitudActualizada = {
+                        ...selectedSolicitud,
+                        detalles: selectedSolicitud.detalles?.map(detalle => 
+                            detalle._id === itemId 
+                                ? { ...detalle, estado: 'rechazado' }
+                                : detalle
+                        )
+                    };
+                    
+                    // Verificar si todos los productos están rechazados
+                    const todosRechazados = solicitudActualizada.detalles?.every(d => d.estado === 'rechazado');
+                    if (todosRechazados) {
+                        solicitudActualizada.estado = 'rechazado';
+                        
+                        // Actualizar también en la lista principal
+                        setSolicitudes(prevSolicitudes => 
+                            prevSolicitudes.map(s => 
+                                s._id === selectedSolicitud._id 
+                                    ? { ...s, estado: 'rechazado' }
+                                    : s
+                            )
+                        );
+                    }
+                    
+                    setSelectedSolicitud(solicitudActualizada);
+                }
+                showInfoToast(`Producto rechazado exitosamente ${response.data.data}`);
+            }
         } catch (error) {
-            console.error('Error al rechazar item:', error);
+            showErrorToast(`Error al rechazar producto: ${error}`);
+            alert('Error al rechazar el producto');
         }
     };
     return (
-        <div>
-            <h1>Vista de Solicitud</h1>
-            <p>Aquí puedes validar y gestionar las solicitudes.</p>
+        <div className="flex flex-col items-center justify-center h-max bg-gray-200 p-4 md:p-5 lg:p-6">
+            <h1 className="text-xl md:text-2xl lg:text-3xl font-bold mb-6 text-center text-gray-800">Vista de Solicitud</h1>
             {/* Aquí puedes agregar más componentes o lógica para manejar la validación de solicitudes */}
+            <Toast autoClose={3000} theme="dark" className="custom-toast"/>
             <table className="border-collapse w-full">
                 <thead>
                     <tr>
                         <th className="p-3 font-bold uppercase bg-gray-200 text-gray-600 border border-gray-300 hidden lg:table-cell">NRO Solicitud</th>
                         <th className="p-3 font-bold uppercase bg-gray-200 text-gray-600 border border-gray-300 hidden lg:table-cell">Descripción</th>
-                        <th className="p-3 font-bold uppercase bg-gray-200 text-gray-600 border border-gray-300 hidden lg:table-cell">Estado</th>
-                        <th className="p-3 font-bold uppercase bg-gray-200 text-gray-600 border border-gray-300 hidden lg:table-cell">Fecha Creación</th>
+                        <th className="p-3 font-bold uppercase bg-gray-200 text-gray-600 border border-gray-300 hidden xl:table-cell">Estado</th>
+                        <th className="p-3 font-bold uppercase bg-gray-200 text-gray-600 border border-gray-300 hidden 2xl:table-cell">Fecha Creación</th>
                         <th className="p-3 font-bold uppercase bg-gray-200 text-gray-600 border border-gray-300 hidden lg:table-cell">Acciones</th>
                     </tr>
                 </thead>
                 <tbody>
                     {loading ? (
                         <tr>
-                            <td colSpan={5} className="p-3 text-center text-gray-600">
+                            <td colSpan={3} className="p-3 text-center text-gray-600 xl:hidden">
+                                Cargando solicitudes...
+                            </td>
+                            <td colSpan={4} className="p-3 text-center text-gray-600 hidden xl:table-cell 2xl:hidden">
+                                Cargando solicitudes...
+                            </td>
+                            <td colSpan={5} className="p-3 text-center text-gray-600 hidden 2xl:table-cell">
                                 Cargando solicitudes...
                             </td>
                         </tr>
                     ) : solicitudes.length === 0 ? (
                         <tr>
-                            <td colSpan={5} className="p-3 text-center text-gray-600">
+                            <td colSpan={3} className="p-3 text-center text-gray-600 xl:hidden">
+                                No hay solicitudes disponibles
+                            </td>
+                            <td colSpan={4} className="p-3 text-center text-gray-600 hidden xl:table-cell 2xl:hidden">
+                                No hay solicitudes disponibles
+                            </td>
+                            <td colSpan={5} className="p-3 text-center text-gray-600 hidden 2xl:table-cell">
                                 No hay solicitudes disponibles
                             </td>
                         </tr>
@@ -179,10 +319,12 @@ export default function SolicitudView() {
                                 </td>
                                 <td className="w-full lg:w-auto p-3 text-gray-800 text-center border border-b text-center block lg:table-cell relative lg:static">
                                     <span className="lg:hidden absolute top-0 left-0 bg-blue-200 px-2 py-1 text-xs font-bold uppercase">Observación</span>
-                                    {solicitud.observaciones || solicitud.observaciones || 'Sin descripción'}
+                                    <span className="text-xs 2xl:text-sm">
+                                        {solicitud.observaciones || solicitud.observaciones || 'Sin descripción'}
+                                    </span>
                                 </td>
-                                <td className="w-full lg:w-auto p-3 text-gray-800 text-center border border-b text-center block lg:table-cell relative lg:static">
-                                    <span className="lg:hidden absolute top-0 left-0 bg-blue-200 px-2 py-1 text-xs font-bold uppercase">Estado</span>
+                                <td className="w-full xl:w-auto p-3 text-gray-800 text-center border border-b text-center hidden xl:table-cell relative xl:static">
+                                    <span className="xl:hidden absolute top-0 left-0 bg-blue-200 px-2 py-1 text-xs font-bold uppercase">Estado</span>
                                     <span className={`rounded py-1 px-3 text-xs font-bold ${
                                         solicitud.estado === 'activo' || solicitud.estado === 'pendiente' 
                                             ? 'bg-yellow-400' 
@@ -193,8 +335,8 @@ export default function SolicitudView() {
                                         {solicitud.estado || 'Sin estado'}
                                     </span>
                                 </td>
-                                <td className="w-full lg:w-auto p-3 text-gray-800 text-center border border-b text-center block lg:table-cell relative lg:static">
-                                    <span className="lg:hidden absolute top-0 left-0 bg-blue-200 px-2 py-1 text-xs font-bold uppercase">Fecha Creación</span>
+                                <td className="w-full 2xl:w-auto p-3 text-gray-800 text-center border border-b text-center hidden 2xl:table-cell relative 2xl:static">
+                                    <span className="2xl:hidden absolute top-0 left-0 bg-blue-200 px-2 py-1 text-xs font-bold uppercase">Fecha Creación</span>
                                     {solicitud.fechaCreacion 
                                         ? new Date(solicitud.fechaCreacion).toLocaleDateString() 
                                         : solicitud.createdAt 
@@ -206,26 +348,32 @@ export default function SolicitudView() {
                                     <span className="lg:hidden absolute top-0 left-0 bg-blue-200 px-2 py-1 text-xs font-bold uppercase">Acciones</span>
                                     <button
                                         onClick={() => handleVerDetalle(solicitud)}
-                                        className="inline-flex items-center px-3 mr-2 py-1 border border-transparent text-xs font-medium rounded-md text-blue bg-yellow-400 hover:bg-yellow-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500 transition-colors"
+                                        className="inline-flex items-center px-3 mr-2 py-1 border border-transparent text-xs font-medium rounded-md text-blue bg-yellow-400 hover:bg-yellow-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-yellow-500 transition-colors"
                                         title="Detalle"
                                     >
-                                        <IonIcon icon={createOutline} className="w-4 h-4 mr-1" />
-                                        Detalle
+                                        <IonIcon icon={createOutline} className="w-4 h-4 xl:mr-1" />
+                                        <span className="hidden xl:inline">Detalle</span>
                                     </button>
-                                    <button
-                                        className="inline-flex items-center px-3 mr-2 py-1 border border-transparent text-xs font-medium rounded-md text-white bg-red-500 hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500 transition-colors"
-                                        title="Eliminar elemento"
-                                    >
-                                        <IonIcon icon={trashOutline} className="w-4 h-4 mr-1" />
-                                        Rechazar
-                                    </button>
-                                    <button
-                                        className="inline-flex items-center px-3 mr-2 py-1 border border-transparent text-xs font-medium rounded-md text-white bg-green-500 hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500 transition-colors"
-                                        title="Eliminar elemento"
-                                    >
-                                        <IonIcon icon={checkmarkCircle} className="w-4 h-4 mr-1" />
-                                        Aprobar
-                                    </button>
+                                    {solicitud.estado === 'pendiente' && (
+                                        <>
+                                            <button
+                                                onClick={() => handleRechazarSolicitud(solicitud)}
+                                                className="inline-flex items-center px-3 mr-2 py-1 border border-transparent text-xs font-medium rounded-md text-white bg-red-500 hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500 transition-colors"
+                                                title="Rechazar solicitud"
+                                            >
+                                                <IonIcon icon={trashOutline} className="w-4 h-4 xl:mr-1" />
+                                                <span className="hidden xl:inline">Rechazar</span>
+                                            </button>
+                                            <button
+                                                onClick={() => handleAprobarSolicitud(solicitud)}
+                                                className="inline-flex items-center px-3 mr-2 py-1 border border-transparent text-xs font-medium rounded-md text-white bg-green-500 hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500 transition-colors"
+                                                title="Aprobar solicitud"
+                                            >
+                                                <IonIcon icon={checkmarkCircle} className="w-4 h-4 xl:mr-1" />
+                                                <span className="hidden xl:inline">Aprobar</span>
+                                            </button>
+                                        </>
+                                    )}
                                 </td>
                             </tr>
                         ))
