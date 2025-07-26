@@ -5,5 +5,6 @@ COPY package*.json ./
 RUN npm install
 RUN npm install -g vite
 COPY . .
+COPY .env.development .env
 EXPOSE 3000
 CMD ["npm", "run", "dev"]
