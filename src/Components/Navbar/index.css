@@ -1,0 +1,88 @@
+li>ul {
+    transform: translatex(100%) scale(0);
+    z-index: 50;
+    position: absolute;
+}
+li:hover>ul {
+    transform: translatex(101%) scale(1)
+}
+li > button svg {
+    transform: rotate(-90deg)
+}
+li:hover > button svg {
+    transform: rotate(-270deg)
+}
+.group:hover .group-hover\:scale-100 {
+    transform: scale(1)
+}
+.group:hover .group-hover\:-rotate-180 {
+    transform: rotate(180deg)
+}
+.scale-0 {
+    transform: scale(0)
+}
+.min-w-32 {
+    min-width: 8rem
+}
+
+/* Hamburger menu styles */
+.hamburger-line {
+    transform-origin: center;
+    transition: all 0.3s ease-in-out;
+}
+
+/* Mobile menu overlay */
+.mobile-menu-overlay {
+    backdrop-filter: blur(4px);
+    background-color: rgba(0, 0, 0, 0.1);
+}
+
+/* Smooth scrolling for mobile menu */
+.mobile-menu {
+    max-height: calc(100vh - 3.5rem);
+    overflow-y: auto;
+    scrollbar-width: thin;
+    scrollbar-color: #e5e7eb transparent;
+}
+
+.mobile-menu::-webkit-scrollbar {
+    width: 6px;
+}
+
+.mobile-menu::-webkit-scrollbar-track {
+    background: transparent;
+}
+
+.mobile-menu::-webkit-scrollbar-thumb {
+    background-color: #e5e7eb;
+    border-radius: 3px;
+}
+
+/* Custom breakpoint for 1200px */
+@media (min-width: 1200px) {
+    .xl\:block {
+        display: block !important;
+    }
+    
+    .xl\:flex {
+        display: flex !important;
+    }
+    
+    .xl\:hidden {
+        display: none !important;
+    }
+}
+
+@media (max-width: 1199px) {
+    .xl\:block {
+        display: none !important;
+    }
+    
+    .xl\:flex {
+        display: none !important;
+    }
+    
+    .xl\:hidden {
+        display: block !important;
+    }
+}
