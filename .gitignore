@@ -34,4 +34,3 @@ docker-compose.yml
 .env.development
 *.production
 *.testing
-*.ts
