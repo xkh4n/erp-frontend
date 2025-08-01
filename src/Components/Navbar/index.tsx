@@ -75,6 +75,7 @@ export default function Navbar() {
                     ]},
                     { label: 'Productos', link: '#', menuItems: [
                         { label: 'Reciclar', link: '/reciclaje'},
+                        { label: 'Agregar', link: '/agregar_producto'},
                         { label: 'Crear Producto', link: '/crear_producto'},
                         { label: 'Consultar Producto', link: '/consultar_producto' },
                     ]},
@@ -82,7 +83,11 @@ export default function Navbar() {
                         { label: 'Solicitar', link: '/crear_solicitud'},
                         { label: 'Autorizar', link: '/autorizar_solicitud'},
                         { label: 'Cancelar', link: '/cancelar_solicitud' },
-                    ]}
+                    ]},
+                    { label: 'Inventario', link: '#', menuItems: [
+                        { label: 'Ingresos', link: '/inventario_ingresos'},
+                        { label: 'Consultar Inventario', link: '/consultar_inventario'},
+                    ]},
                 ] }
             ] },
         ]}
