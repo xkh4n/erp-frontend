@@ -3,10 +3,32 @@
   <head>
     <meta charset="UTF-8" />
     <link rel="icon" type="image/png" href="/images/imperial.png" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    
+    <!-- Meta viewport optimizado para móviles -->
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
+    
+    <!-- Meta tags para PWA y pantalla completa -->
+    <meta name="mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+    <meta name="apple-mobile-web-app-title" content="Gestión de Adquisiciones" />
+    <meta name="theme-color" content="#1e3a8a" />
+    
+    <!-- Prevenir zoom en inputs en iOS -->
+    <meta name="format-detection" content="telephone=no" />
+    
+    <!-- PWA Manifest -->
+    <link rel="manifest" href="/manifest.json" />
+    
+    <!-- Apple touch icons -->
+    <link rel="apple-touch-icon" href="/images/imperial.png" />
+    <link rel="apple-touch-icon" sizes="152x152" href="/images/imperial.png" />
+    <link rel="apple-touch-icon" sizes="180x180" href="/images/imperial.png" />
+    <link rel="apple-touch-icon" sizes="167x167" href="/images/imperial.png" />
+    
     <title>Gestión de Adquisiciones</title>
   </head>
-  <body class=" bg-blue-950">
+  <body class="bg-blue-950 mobile-body">
     <div id="root"></div>
     <script type="module" src="/src/main.tsx"></script>
   </body>
