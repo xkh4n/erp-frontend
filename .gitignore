@@ -27,6 +27,7 @@ docker-compose.yml
 *.njsproj
 *.sln
 *.sw?
+.env
 .env.development
 *.development
 *.production
@@ -34,3 +35,4 @@ docker-compose.yml
 .env.development
 *.production
 *.testing
+.env
