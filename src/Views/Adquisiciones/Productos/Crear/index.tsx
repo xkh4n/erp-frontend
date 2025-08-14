@@ -32,6 +32,7 @@ export default function CrearProducto() {
 	const [productoModelo, setModelo] = useState("");
 	const [productoDescripcion, setDescripcion] = useState("");
 	const [selectedCategoria, setSelectedCategoria] = useState("");
+	const [marca, setMarca] = useState("");
 	const [categorias, setCategorias] = useState<Categoria[]>([]);
 
     useEffect(() => {
@@ -88,6 +89,7 @@ export default function CrearProducto() {
 	const handlerSubmit = async () => {
 		try {
 			validateField(productoName, "el Nombre del Producto");
+			validateField(marca, "la Marca del Producto");
 			validateField(productoModelo, "el Modelo del Producto");
 			validateField(productoDescripcion, "la Descripción del Producto");
 			if (selectedCategoria === "") {
@@ -101,6 +103,7 @@ export default function CrearProducto() {
 				{
 					categoria: selectedCategoria,
 					nombre: productoName,
+					marca: marca,
 					modelo: productoModelo,
 					descripcion: productoDescripcion
 				}
@@ -174,7 +177,7 @@ export default function CrearProducto() {
                                 ))}
                             </select>
                         </div>
-						<div className="w-full max-[799px]:w-full min-[800px]:col-span-4 min-[1000px]:col-span-5 min-[1200px]:col-span-3 min-[1400px]:col-span-3">
+						<div className="w-full max-[799px]:w-full min-[800px]:col-span-4 min-[1000px]:col-span-5 min-[1200px]:col-span-2 min-[1400px]:col-span-3">
 							<label
 								className="block text-gray-700 text-sm font-medium mb-2"
 								htmlFor="producto"
@@ -190,7 +193,23 @@ export default function CrearProducto() {
 								onChange={(e) => setProducto(e.target.value.toUpperCase())}
 							/>
 						</div>
-						<div className="w-full max-[799px]:w-full min-[800px]:col-span-2 min-[1000px]:col-span-3 min-[1200px]:col-span-2 min-[1400px]:col-span-3">
+						<div className="w-full max-[799px]:w-full min-[800px]:col-span-3 min-[1000px]:col-span-5 min-[1200px]:col-span-2 min-[1400px]:col-span-2">
+							<label
+								className="block text-gray-700 text-sm font-medium mb-2"
+								htmlFor="txtmarca"
+							>
+								Nombre de la Marca
+							</label>
+							<input
+								id="txtmarca"
+								name="txtmarca"
+								type="text"
+								value={marca}
+								className="w-full px-3 py-2 md:px-4 md:py-2 rounded-lg border border-gray-300 shadow-sm text-sm md:text-base placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-200"
+								onChange={(e) => setMarca(e.target.value.toUpperCase())}
+							/>
+						</div>
+						<div className="w-full max-[799px]:w-full min-[800px]:col-span-3 min-[1000px]:col-span-3 min-[1200px]:col-span-2 min-[1400px]:col-span-2">
 							<label
 								className="block text-gray-700 text-sm font-medium mb-2"
 								htmlFor="modelo"
@@ -206,7 +225,7 @@ export default function CrearProducto() {
 								onChange={(e) => setModelo(e.target.value.toUpperCase())}
 							/>
 						</div>
-						<div className="w-full max-[799px]:w-full min-[800px]:col-span-4 min-[1000px]:col-span-5 min-[1200px]:col-span-3 min-[1400px]:col-span-4">
+						<div className="w-full max-[799px]:w-full min-[800px]:col-span-6 min-[1000px]:col-span-8 min-[1200px]:col-span-2 min-[1400px]:col-span-3">
 							<label
 								className="block text-gray-700 text-sm font-medium mb-2"
 								htmlFor="prodDescripcion"
