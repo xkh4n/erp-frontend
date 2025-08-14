@@ -75,6 +75,7 @@ export default function Navbar() {
                     ]},
                     { label: 'Productos', link: '#', menuItems: [
                         { label: 'Reciclar', link: '/reciclaje'},
+                        { label: 'Agregar', link: '/agregar_producto'},
                         { label: 'Crear Producto', link: '/crear_producto'},
                         { label: 'Consultar Producto', link: '/consultar_producto' },
                     ]},
@@ -82,7 +83,11 @@ export default function Navbar() {
                         { label: 'Solicitar', link: '/crear_solicitud'},
                         { label: 'Autorizar', link: '/autorizar_solicitud'},
                         { label: 'Cancelar', link: '/cancelar_solicitud' },
-                    ]}
+                    ]},
+                    { label: 'Inventario', link: '#', menuItems: [
+                        { label: 'Ingresos', link: '/inventario_ingresos'},
+                        { label: 'Consultar Inventario', link: '/consultar_inventario'},
+                    ]},
                 ] }
             ] },
         ]}
@@ -90,7 +95,7 @@ export default function Navbar() {
 
     const menulvl1ConSubmenu = (label: string, menuItems: MenuItem[]) => {
         return (
-            <li key={label} className="relative px-3 py-1 group/submenu text-center mt-2 rounded-full bg-red-600 hover:bg-red-300">
+            <li key={label} className="relative px-3 py-1 group/submenu text-center mt-2 rounded-full bg-red-600 hover:bg-red-300 shadow-md">
                 <button className="w-full text-left flex items-center outline-none focus:outline-none rounded-full">
                     <span className="pr-1 flex-1 text-blue-950 font-bold">{label}</span>
                     <span className="mr-auto">
@@ -99,11 +104,75 @@ export default function Navbar() {
                         </svg>
                     </span>
                 </button>
-                <ul className="bg-transparent absolute top-0 right-0 transition duration-150 ease-in-out origin-top-left min-w-32 invisible group-hover/submenu:visible">
+                <ul className="bg-transparent absolute top-full right-1/2 transform -translate-x-1/2 transition duration-250 ease-in-out origin-top min-w-32 invisible group-hover/submenu:visible z-50 w-[170px]">
                     {menuItems.map((item) => (
                         item.menuItems && item.menuItems.length > 0 
-                            ? menulvl1ConSubmenu(item.label, item.menuItems)
+                            ? menulvl2ConSubmenu(item.label, item.menuItems)
                             : menulvl0SinSubmenu(item.label, item.link, false)
+                    ))}
+                </ul>
+            </li>
+        );
+    }
+
+    const menulvl2ConSubmenu = (label: string, menuItems: MenuItem[]) => {
+        return (
+            <li key={label} className="relative px-3 py-1 group/submenu2 text-center mt-2 rounded-full bg-red-600 hover:bg-red-300 shadow-lg">
+                <button className="w-full text-left flex items-center outline-none focus:outline-none rounded-full">
+                    <span className="pr-1 flex-1 text-blue-950 font-bold">{label}</span>
+                    <span className="mr-auto">
+                        <svg className="fill-blue-600 h-4 w-4 transition duration-150 ease-in-out" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20">
+                            <path d="M9.293 12.95l.707.707L15.657 8l-1.414-1.414L10 10.828 5.757 6.586 4.343 8z"/>
+                        </svg>
+                    </span>
+                </button>
+                <ul className="bg-transparent absolute top-full right-1/2 transform -translate-x-1/2 transition duration-250 ease-in-out origin-top min-w-32 invisible group-hover/submenu2:visible z-50 w-[170px]">
+                    {menuItems.map((item) => (
+                        item.menuItems && item.menuItems.length > 0 
+                            ? menulvl3ConSubmenu(item.label, item.menuItems)
+                            : menulvl0SinSubmenu(item.label, item.link, false)
+                    ))}
+                </ul>
+            </li>
+        );
+    }
+
+    const menulvl3ConSubmenu = (label: string, menuItems: MenuItem[]) => {
+        return (
+            <li key={label} className="relative px-3 py-1 group/submenu3 text-center mt-2 rounded-full bg-red-600 hover:bg-red-300 shadow-xl">
+                <button className="w-full text-left flex items-center outline-none focus:outline-none rounded-full">
+                    <span className="pr-1 flex-1 text-blue-950 font-bold">{label}</span>
+                    <span className="mr-auto">
+                        <svg className="fill-blue-600 h-4 w-4 transition duration-150 ease-in-out" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20">
+                            <path d="M9.293 12.95l.707.707L15.657 8l-1.414-1.414L10 10.828 5.757 6.586 4.343 8z"/>
+                        </svg>
+                    </span>
+                </button>
+                <ul className="bg-transparent absolute top-full right-1/2 transform -translate-x-1/2 transition duration-250 ease-in-out origin-top min-w-32 invisible group-hover/submenu3:visible z-50 w-[170px]">
+                    {menuItems.map((item) => (
+                        item.menuItems && item.menuItems.length > 0 
+                            ? menulvl4ConSubmenu(item.label, item.menuItems)
+                            : menulvl0SinSubmenu(item.label, item.link, false)
+                    ))}
+                </ul>
+            </li>
+        );
+    }
+
+    const menulvl4ConSubmenu = (label: string, menuItems: MenuItem[]) => {
+        return (
+            <li key={label} className="relative px-3 py-1 group/submenu4 text-center mt-2 rounded-full bg-red-600 hover:bg-red-300 shadow-2xl">
+                <button className="w-full text-left flex items-center outline-none focus:outline-none rounded-full">
+                    <span className="pr-1 flex-1 text-blue-950 font-bold">{label}</span>
+                    <span className="mr-auto">
+                        <svg className="fill-blue-600 h-4 w-4 transition duration-150 ease-in-out" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20">
+                            <path d="M9.293 12.95l.707.707L15.657 8l-1.414-1.414L10 10.828 5.757 6.586 4.343 8z"/>
+                        </svg>
+                    </span>
+                </button>
+                <ul className="bg-transparent absolute top-full right-1/2 transform -translate-x-1/2 transition duration-250 ease-in-out origin-top min-w-32 invisible group-hover/submenu4:visible z-50 w-[200px]">
+                    {menuItems.map((item) => (
+                        menulvl0SinSubmenu(item.label, item.link, false)
                     ))}
                 </ul>
             </li>
@@ -116,12 +185,12 @@ export default function Navbar() {
                 <button className="outline-none focus:outline-none px-3 py-1 rounded-full flex items-center min-w-40">
                     <span className="pr-1 flex-1 text-blue-950 font-bold">{label}</span>
                     <span>
-                        <svg className="fill-blue-600 h-4 w-4 transform group-hover/menu:-rotate-180 transition duration-150 ease-in-out" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20">
+                        <svg className="fill-blue-600 h-4 w-4 transform group-hover/menu:-rotate-180 transition duration-250 ease-in-out" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20">
                             <path d="M9.293 12.95l.707.707L15.657 8l-1.414-1.414L10 10.828 5.757 6.586 4.343 8z"/>
                         </svg>
                     </span>
                 </button>
-                <ul className="bg-transparent rounded-sm transform scale-0 group-hover/menu:scale-100 absolute transition duration-150 ease-in-out origin-top min-w-32">
+                <ul className="bg-transparent rounded-sm transform scale-0 group-hover/menu:scale-100 absolute transition duration-250 ease-in-out origin-top min-w-32 w-[170px]">
                     {menuItems.map((item) => (
                         item.menuItems && item.menuItems.length > 0 
                             ? menulvl1ConSubmenu(item.label, item.menuItems)
@@ -132,17 +201,17 @@ export default function Navbar() {
         );
     }
 
-    const menulvl0SinSubmenu = (label:string, link:string, isFirstLevel:boolean = true) => {
-        return (
-            <li key={label} className={isFirstLevel 
-                ? "inline-block px-3 py-1 bg-red-600 m-2 mt-2 min-w-40 rounded-full text-blue-950 font-bold text-center hover:bg-red-300" 
-                : "outline-none focus:outline-none px-3 mt-2 py-1 bg-red-600 rounded-full flex items-center min-w-40 text-blue-950 font-bold text-center hover:bg-red-300"}>
-                <Link to={link}>
-                    {label}
-                </Link>
-            </li>
-        );
-    }
+const menulvl0SinSubmenu = (label:string, link:string, isFirstLevel:boolean = true) => {
+    return (
+        <li key={label} className={isFirstLevel 
+            ? "inline-block px-3 py-1 bg-red-600 m-2 mt-2 min-w-40 rounded-full text-blue-950 font-bold text-center hover:bg-red-300" 
+            : "outline-none focus:outline-none px-3 mt-2 py-1 bg-red-600 rounded-full flex items-center min-w-40 text-blue-950 font-bold text-center hover:bg-red-300 shadow-md"}>
+            <Link to={link}>
+                {label}
+            </Link>
+        </li>
+    );
+}
 
     const renderMenuItems = (items: MenuItem[]) => {
         return items.map((item) => (

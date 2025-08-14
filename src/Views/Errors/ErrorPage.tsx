@@ -12,9 +12,7 @@ const ErrorPage: React.FC<ErrorProps> = ({ code, message, detail }) => {
     const navigate = useNavigate();
     // Mapeo de códigos de error a imágenes
     const errorImages: { [key: number]: string } = {
-        301: '/errors/301.png',
         400: '/errors/400.png',
-        401: '/errors/401.png',
         403: '/errors/403.png',
         404: '/errors/404.png',
         409: '/errors/409.png',
@@ -24,7 +22,12 @@ const ErrorPage: React.FC<ErrorProps> = ({ code, message, detail }) => {
     };
 
     // Obtener la imagen correspondiente al código de error
-    const imageSrc = errorImages[code] || '/errors/default.png'; // Imagen predeterminada si no se encuentra
+    const imageSrc = errorImages[code] || '/errors/404.png'; // Imagen predeterminada si no se encuentra
+
+    const handleImageError = (e: React.SyntheticEvent<HTMLImageElement>) => {
+        // Fallback si no existe la imagen
+        (e.target as HTMLImageElement).src = '/errors/404.png';
+    };
 
     return (
         <div className="w-full h-screen flex flex-col items-center justify-center">
@@ -32,6 +35,7 @@ const ErrorPage: React.FC<ErrorProps> = ({ code, message, detail }) => {
                 src={imageSrc} 
                 alt={`Error ${code}`} 
                 className="h-1/3 opacity-90 shadow-lg shadow-red-600/95 rounded-full object-contain"
+                onError={handleImageError}
             />
             <div className="flex flex-col items-center justify-center">
                 <p className="mt-8 text-2xl md:text-3xl lg:text-4xl font-bold text-red-600">{message}</p>
