@@ -11,12 +11,11 @@ node_modules
 dist
 dist-ssr
 *.local
-.env*
-.env.development
-.env.production
-.env.testing
 Dockerfile.*
 docker-compose.yml
+.env.development
+.env.testing
+.env.production
 
 # Editor directories and files
 .vscode/*
