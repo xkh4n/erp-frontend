@@ -4,7 +4,6 @@ WORKDIR /app
 COPY package*.json ./
 RUN npm install
 COPY . .
-COPY .env.testing .env
 RUN npm run build:test
 
 # Etapa final con NGINX

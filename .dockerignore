@@ -4,3 +4,6 @@ Dockerfile.*
 docker-compose.yml
 Test
 .vscode/
+.env.development
+.env.testing
+.env.production
