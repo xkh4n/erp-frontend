@@ -1,6 +1,6 @@
 import { Link } from 'react-router-dom'
 import { logInOutline } from 'ionicons/icons'
-import { IsEmail, IsPassword} from '../../Library/Validations'
+import { IsUsername, IsPassword} from '../../Library/Validations'
 import { CustomError } from '../../Library/Errores';
 import { useState } from 'react'
 import { useNavigate } from 'react-router-dom';
@@ -19,7 +19,7 @@ interface LoginResponse {
     token?: string;
     user?: {
         id: string;
-        email: string;
+        username: string;
         name?: string;
         role?: string;
     };
@@ -28,18 +28,18 @@ interface LoginResponse {
 
 export default function Index() {
     const navigate = useNavigate();
-    const [email, setEmail] = useState('')
+    const [username, setUsername] = useState('')
     const [password, setPassword] = useState('')
 
     // Función para manejar el envío del formulario
     const handleFormSubmit = async (formData: FormData): Promise<LoginResponse> => {
-        const email = formData.get('email')?.toString() || '';
+        const username = formData.get('username')?.toString() || '';
         const password = formData.get('password')?.toString() || '';
 
         // Validación final antes del envío
-        if (!IsEmail(email)) {
-            showErrorToast("Por favor, ingrese un email válido");
-            throw new Error("Invalid email");
+        if (!IsUsername(username)) {
+            showErrorToast("Por favor, ingrese un nombre de usuario válido");
+            throw new Error("Invalid username");
         }
 
         if (!IsPassword(password)) {
@@ -49,7 +49,7 @@ export default function Index() {
 
         try {
             const response = await axios.post(`${import.meta.env.VITE_API_URL}/login`, {
-                email,
+                username,
                 password
             }, {
                 headers: {
@@ -129,14 +129,14 @@ export default function Index() {
                     {({ isLoading, isBlocked }) => (
                         <>
                             <ValidatedInput
-                                name="email"
-                                type="email"
-                                placeholder="email.."
-                                label="Email"
-                                value={email}
-                                onChange={setEmail}
-                                validator={IsEmail}
-                                errorMessage="Por favor, ingrese un email válido"
+                                name="username"
+                                type="text"
+                                placeholder="username.."
+                                label="Username"
+                                value={username}
+                                onChange={setUsername}
+                                validator={IsUsername}
+                                errorMessage="Por favor, ingrese un nombre de usuario válido"
                                 autoLowercase={true}
                                 realTimeValidation={true}
                                 required={true}
