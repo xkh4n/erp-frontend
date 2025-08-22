@@ -1,104 +1,49 @@
 import { Link } from 'react-router-dom'
 import { logInOutline } from 'ionicons/icons'
 import { IsUsername, IsPassword} from '../../Library/Validations'
-import { CustomError } from '../../Library/Errores';
 import { useState } from 'react'
 import { useNavigate } from 'react-router-dom';
 import { ValidatedInput } from '../../Components/ValidatedInput'
 import { SecureButton } from '../../Components/SecureButton'
 import { SecureForm } from '../../Components/SecureForm'
-import { showErrorToast, showSuccessToast } from '../../Components/Toast'
-import axios from 'axios'
+import { useAuth } from '../../Library/Hooks/useAuth'
 
 import './Login.css'
 
-// Interfaz para la respuesta del login
-interface LoginResponse {
+// Interfaz para la respuesta del form
+interface LoginFormResponse {
     success: boolean;
     message: string;
-    token?: string;
-    user?: {
-        id: string;
-        username: string;
-        name?: string;
-        role?: string;
-    };
 }
 
 
 export default function Index() {
     const navigate = useNavigate();
+    const { login } = useAuth();
     const [username, setUsername] = useState('')
     const [password, setPassword] = useState('')
 
     // Función para manejar el envío del formulario
-    const handleFormSubmit = async (formData: FormData): Promise<LoginResponse> => {
+    const handleFormSubmit = async (formData: FormData): Promise<LoginFormResponse> => {
         const username = formData.get('username')?.toString() || '';
         const password = formData.get('password')?.toString() || '';
 
         // Validación final antes del envío
         if (!IsUsername(username)) {
-            showErrorToast("Por favor, ingrese un nombre de usuario válido");
-            throw new Error("Invalid username");
+            throw new Error("Por favor, ingrese un nombre de usuario válido");
         }
 
         if (!IsPassword(password)) {
-            showErrorToast("La contraseña debe tener al menos 8 caracteres, una mayúscula, una minúscula y un carácter especial");
-            throw new Error("Invalid password");
+            throw new Error("La contraseña debe tener al menos 8 caracteres, una mayúscula, una minúscula y un carácter especial");
         }
 
-        try {
-            const response = await axios.post(`${import.meta.env.VITE_API_URL}/login`, {
-                username,
-                password
-            }, {
-                headers: {
-                    'Content-Type': 'application/json'
-                },
-                timeout: 5000
-            });
-
-            console.log(response.data.message);
-            showSuccessToast("Inicio de sesión exitoso");
-
-            // Manejar token JWT de forma segura
-            if (response.data.token) {
-                localStorage.setItem('authToken', response.data.token);
-                axios.defaults.headers.common['Authorization'] = `Bearer ${response.data.token}`;
-            }
-
+        const success = await login(username, password);
+        
+        if (success) {
             navigate('/');
-            return response.data as LoginResponse;
-
-        } catch (error) {
-            if (error instanceof CustomError) {
-                const errorData = error.toJSON();
-                showErrorToast(`Error: ${errorData.message}`);
-                throw error;
-            } else if (error instanceof axios.AxiosError) {
-                if (error.response?.status === 401 || error.response?.status === 403) {
-                    // Este error activará el sistema de intentos fallidos
-                    throw new Error("Credenciales incorrectas");
-                } else if (error.response?.status === 404) {
-                    // Redirigir a vista de error para credenciales inválidas
-                    const errorData = error.response.data;
-                    navigate('/error', {
-                        state: {
-                            code: 404,
-                            message: errorData?.message || "Error en Inicio de Sesión",
-                            detail: errorData?.details || "Las Credenciales del usuario no son válidas"
-                        }
-                    });
-                    return { success: false, message: "Redirigiendo a página de error" };
-                } else {
-                    const errorMessage = error.response?.data?.message || error.message || 'Error de conexión';
-                    showErrorToast(errorMessage);
-                    throw error;
-                }
-            } else {
-                showErrorToast('Ha ocurrido un error inesperado');
-                throw error;
-            }
+            return { success: true, message: "Inicio de sesión exitoso" };
+        } else {
+            throw new Error("Error en el inicio de sesión");
         }
     };
 

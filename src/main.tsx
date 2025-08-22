@@ -3,6 +3,7 @@ import { createRoot } from 'react-dom/client'
 
 import './index.css'
 import Routes from './Routes'
+import { AuthProvider } from './Library/Context/AuthContext'
 
 // Registrar Service Worker para PWA
 if ('serviceWorker' in navigator) {
@@ -19,6 +20,8 @@ if ('serviceWorker' in navigator) {
 
 createRoot(document.getElementById('root')!).render(
     <StrictMode>
-        <Routes />
+        <AuthProvider>
+            <Routes />
+        </AuthProvider>
     </StrictMode>,
 )

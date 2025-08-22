@@ -1,5 +1,7 @@
 import { Link } from "react-router-dom";
 import { useState, useEffect } from "react";
+import { useAuth } from '../../Library/Hooks/useAuth';
+import UserInfo from '../UserInfo';
 import './index.css';
 
 type MenuItem = {
@@ -10,6 +12,7 @@ type MenuItem = {
 
 export default function Navbar() {
     const [isMenuOpen, setIsMenuOpen] = useState(false);
+    const { isAuthenticated } = useAuth();
 
     const toggleMenu = () => {
         setIsMenuOpen(!isMenuOpen);
@@ -66,6 +69,7 @@ export default function Navbar() {
                 ]},
                 { label: 'Adquisiciones', link: '#', menuItems:[
                     { label: 'Ingresos', link: '/ingresos' },
+                    { label: 'Asignación', link: '/asignacion' },
                     { label: 'Categorías', link: '#', menuItems: [
                         { label: 'Nueva', link: '/crear_categoria'}
                     ]},
@@ -310,16 +314,20 @@ const menulvl0SinSubmenu = (label:string, link:string, isFirstLevel:boolean = tr
                     </ul>
                 </div>
 
-                {/* Login Button - always visible */}
+                {/* Login Button o User Info - always visible */}
                 <div className="hidden xl:block">
-                    <Link to="/login">
-                        <button className="px-4 py-2 bg-blue-950 hover:bg-red-600 text-gray-50 rounded-xl flex items-center gap-2">
-                            <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
-                                <path fillRule="evenodd" d="M3 3a1 1 0 011 1v12a1 1 0 11-2 0V4a1 1 0 011-1zm7.707 3.293a1 1 0 010 1.414L9.414 9H17a1 1 0 110 2H9.414l1.293 1.293a1 1 0 01-1.414 1.414l-3-3a1 1 0 010-1.414l3-3a1 1 0 011.414 0z" clipRule="evenodd" />
-                            </svg>
-                            <span>Login</span>
-                        </button>
-                    </Link>
+                    {isAuthenticated ? (
+                        <UserInfo />
+                    ) : (
+                        <Link to="/login">
+                            <button className="px-4 py-2 bg-blue-950 hover:bg-red-600 text-gray-50 rounded-xl flex items-center gap-2">
+                                <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+                                    <path fillRule="evenodd" d="M3 3a1 1 0 011 1v12a1 1 0 11-2 0V4a1 1 0 011-1zm7.707 3.293a1 1 0 010 1.414L9.414 9H17a1 1 0 110 2H9.414l1.293 1.293a1 1 0 01-1.414 1.414l-3-3a1 1 0 010-1.414l3-3a1 1 0 011.414 0z" clipRule="evenodd" />
+                                </svg>
+                                <span>Login</span>
+                            </button>
+                        </Link>
+                    )}
                 </div>
             </div>
 
@@ -330,14 +338,18 @@ const menulvl0SinSubmenu = (label:string, link:string, isFirstLevel:boolean = tr
                         {renderMobileMenuItems(menuItems)}
                     </ul>
                     <div className="mt-4 pt-4 border-t border-gray-200">
-                        <Link to="/login" onClick={() => setIsMenuOpen(false)}>
-                            <button className="w-full px-4 py-2 bg-blue-950 hover:bg-red-600 text-gray-50 rounded-xl flex items-center justify-center gap-2 transition-colors duration-200">
-                                <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
-                                    <path fillRule="evenodd" d="M3 3a1 1 0 011 1v12a1 1 0 11-2 0V4a1 1 0 011-1zm7.707 3.293a1 1 0 010 1.414L9.414 9H17a1 1 0 110 2H9.414l1.293 1.293a1 1 0 01-1.414 1.414l-3-3a1 1 0 010-1.414l3-3a1 1 0 011.414 0z" clipRule="evenodd" />
-                                </svg>
-                                <span>Login</span>
-                            </button>
-                        </Link>
+                        {isAuthenticated ? (
+                            <UserInfo className="justify-center" />
+                        ) : (
+                            <Link to="/login" onClick={() => setIsMenuOpen(false)}>
+                                <button className="w-full px-4 py-2 bg-blue-950 hover:bg-red-600 text-gray-50 rounded-xl flex items-center justify-center gap-2 transition-colors duration-200">
+                                    <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+                                        <path fillRule="evenodd" d="M3 3a1 1 0 011 1v12a1 1 0 11-2 0V4a1 1 0 011-1zm7.707 3.293a1 1 0 010 1.414L9.414 9H17a1 1 0 110 2H9.414l1.293 1.293a1 1 0 01-1.414 1.414l-3-3a1 1 0 010-1.414l3-3a1 1 0 011.414 0z" clipRule="evenodd" />
+                                    </svg>
+                                    <span>Login</span>
+                                </button>
+                            </Link>
+                        )}
                     </div>
                 </div>
             </div>
