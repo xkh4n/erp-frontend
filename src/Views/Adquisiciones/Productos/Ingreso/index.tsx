@@ -1,16 +1,9 @@
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import { useState, useEffect, useCallback } from "react";
 import axios from "axios";
-import { CustomError } from "../../../../Library/Errores";
-
-
-type ErrorState = {
-    code: number;
-    message: string;
-    detail: string;
-};
+import { handleError } from "../../../../Library/Utils/errorHandler";
 
 
 type Solicitud = {
@@ -77,6 +70,13 @@ type Proveedor = {
 
 export default function IngresoProducto() {
     const navigate = useNavigate();
+    const location = useLocation();
+
+    // Función helper para manejo de errores con contexto fijo
+    const handleErrorWithContext = useCallback((error: unknown) => {
+        handleError(error, navigate, location.pathname);
+    }, [navigate, location.pathname]);
+
     const [solicitud, setSolicitud] = useState<Solicitud[]>([]);
     const [detalleSolicitud, setDetalleSolicitud] = useState<DetalleSolicitud[]>([]);
     
@@ -206,7 +206,7 @@ export default function IngresoProducto() {
                     autoClose: 4000,
                 });
             } else {
-                handleError(error, navigate);
+                handleErrorWithContext(error);
             }
         }
     };
@@ -242,10 +242,10 @@ export default function IngresoProducto() {
                     });
                 }
             } else {
-                handleError(error, navigate);
+                handleErrorWithContext(error);
             }
         }
-    }, [navigate]);
+    }, [handleErrorWithContext]);
 
     // Función separada para recargar el detalle de la solicitud
     const recargarDetalleSolicitud = useCallback(async () => {
@@ -509,31 +509,6 @@ export default function IngresoProducto() {
         setDetalleRecepciones([]);
     };
 
-    // Manejo de errores genérico
-    // Esta función maneja los errores y redirige a una página de error con el estado adecuado
-    function handleError(
-        error: unknown,
-        navigate: (path: string, options?: { state: ErrorState }) => void
-    ) {
-        if (error instanceof CustomError) {
-            const errorData = error.toJSON();
-            navigate("/error", {
-                state: {
-                code: errorData.code,
-                message: errorData.message,
-                detail: errorData.details
-                }
-            });
-        } else if (error instanceof axios.AxiosError) {
-            navigate("/error", {
-                state: {
-                code: error.response?.status || 500,
-                message: error.message || "Network Error",
-                detail: error.response?.statusText || "Unknown error"
-                }
-            });
-        }
-    }
     return (
         <div className="flex flex-col items-center justify-center h-max bg-gray-200 p-4 md:p-5 lg:p-6">
         <ToastContainer aria-label="Notificaciones de la aplicación" />

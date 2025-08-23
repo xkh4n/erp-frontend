@@ -2,18 +2,12 @@ import { saveOutline } from "ionicons/icons";
 import { IonIcon } from "@ionic/react";
 import { useState, useEffect, useCallback } from "react";
 import { IsParagraph } from "../../../../Library/Validations";
-import {CustomError,} from "../../../../Library/Errores";
+import { handleError } from "../../../../Library/Utils/errorHandler";
 import axios from "axios";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 import { Toast, showApprovalToast, showErrorToast } from '../../../../Components/Toast';
 
 
-
-type ErrorState = {
-	code: number;
-	message: string;
-	detail: string;
-};
 
 type Categoria = {
 	_id: string;
@@ -24,6 +18,12 @@ type Categoria = {
 
 export default function CrearCategoria() {
 	const navigate = useNavigate();
+	const location = useLocation();
+
+	// Función helper para manejo de errores con contexto fijo
+	const handleErrorWithContext = useCallback((error: unknown) => {
+		handleError(error, navigate, location.pathname);
+	}, [navigate, location.pathname]);
 
 	const [selectedCategoria, setSelectedCategoria] = useState("");
 	const [tipoCategoria, setTipoCategoria] = useState("");
@@ -38,9 +38,9 @@ export default function CrearCategoria() {
             );
             setCategorias(response.data.data);
         } catch (error) {
-            handleError(error, navigate);
+            handleErrorWithContext(error);
         }
-    }, [navigate]);
+    }, [handleErrorWithContext]);
 
     useEffect(() => {
         fetchCategorias();
@@ -87,30 +87,6 @@ export default function CrearCategoria() {
 			// Si hay error en el request, empezar con TIP001
 			console.warn("Error al obtener la última categoría, usando código por defecto:", error);
 			return "CAT001";
-		}
-	}
-
-	function handleError(
-		error: unknown,
-		navigate: (path: string, options?: { state: ErrorState }) => void
-	) {
-		if (error instanceof CustomError) {
-			const errorData = error.toJSON();
-			navigate("/error", {
-			state: {
-				code: errorData.code,
-				message: errorData.message,
-				detail: errorData.details
-			}
-		});
-		} else if (error instanceof axios.AxiosError) {
-			navigate("/error", {
-			state: {
-				code: error.response?.status || 500,
-				message: error.message || "Network Error",
-				detail: error.response?.statusText || "Unknown error"
-			}
-			});
 		}
 	}
 
@@ -185,7 +161,7 @@ export default function CrearCategoria() {
 			navigate("/crear_categoria"); // Redirige a la página de productos después de guardar el producto
 		} catch (error) {
 			showErrorToast("Error al guardar la Categoría");
-			handleError(error, navigate);
+			handleErrorWithContext(error);
 		}
 	};
 

@@ -1,23 +1,14 @@
-import { useNavigate } from "react-router-dom";
-import { useState, useEffect } from "react";
+import { useNavigate, useLocation } from "react-router-dom";
+import { useState, useEffect, useCallback } from "react";
 import { IsBoolean, IsEmail, IsParagraph, IsPhone, IsRut } from "../../../../Library/Validations";
-import {
-        CustomError,
-        createValidationError
-} from "../../../../Library/Errores";
+import { createValidationError } from "../../../../Library/Errores";
+import { handleError } from "../../../../Library/Utils/errorHandler";
 import { saveOutline } from "ionicons/icons";
 import { IonIcon } from "@ionic/react";
-
 import axios from "axios";
-
 import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 
-type ErrorState = {
-        code: number;
-        message: string;
-        detail: string;
-};
 type country = {
         _id: string;
         iso_code: string;
@@ -42,6 +33,12 @@ type estado = {
 
 export default function CrearProveedor() {
     const navigate = useNavigate();
+    const location = useLocation();
+
+    // Función helper para manejo de errores con contexto fijo
+    const handleErrorWithContext = useCallback((error: unknown) => {
+        handleError(error, navigate, location.pathname);
+    }, [navigate, location.pathname]);
 
     const [paises, setPaises] = useState<country[]>([]);
     const [ciudades, setCiudades] = useState<city[]>([]);
@@ -73,11 +70,11 @@ export default function CrearProveedor() {
                 );
                 setPaises(response.data.data);
             } catch (error) {
-                handleError(error, navigate);
+                handleErrorWithContext(error);
             }
         };
         fetchPaises();
-    }, []);
+    }, [handleErrorWithContext]);
 
     useEffect(() => {
         if (!selectedPais) {
@@ -92,11 +89,11 @@ export default function CrearProveedor() {
                 );
                 setCiudades(response.data.data);
             } catch (error) {
-                handleError(error, navigate);
+                handleErrorWithContext(error);
             }
         };
         fetchCiudades();
-    }, [selectedPais]);
+    }, [selectedPais, handleErrorWithContext]);
 
     useEffect(() => {
         if (!selectedCiudad) {
@@ -111,35 +108,11 @@ export default function CrearProveedor() {
                 );
                 setComunas(response.data.data);
             } catch (error) {
-                handleError(error, navigate);
+                handleErrorWithContext(error);
             }
         };
         fetchComunas();
-    }, [selectedCiudad]);
-
-    function handleError(
-        error: unknown,
-        navigate: (path: string, options?: { state: ErrorState }) => void
-    ) {
-        if (error instanceof CustomError) {
-            const errorData = error.toJSON();
-            navigate("/error", {
-                state: {
-                    code: errorData.code,
-                    message: errorData.message,
-                    detail: errorData.details
-                }
-            });
-        } else if (error instanceof axios.AxiosError) {
-            navigate("/error", {
-                state: {
-                    code: error.response?.status || 500,
-                    message: error.message || "Network Error",
-                    detail: error.response?.statusText || "Unknown error"
-                }
-            });
-        }
-    }
+    }, [selectedCiudad, handleErrorWithContext]);
 
     const validateField = (fieldValue: string) => {
             if (!IsParagraph(fieldValue) || fieldValue === "") {
@@ -281,7 +254,7 @@ export default function CrearProveedor() {
                 pauseOnHover: true,
                 draggable: true
             });
-            handleError(error, navigate);
+            handleErrorWithContext(error);
         }
     };
 

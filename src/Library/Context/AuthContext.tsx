@@ -7,6 +7,7 @@ export interface User {
     id: string;
     username: string;
     name?: string;
+    nombre?: string;
     role?: string;
     permissions?: string[];
 }
@@ -177,33 +178,50 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
                 return;
             }
 
-            // Verificar si el token es válido haciendo una petición de prueba
+            // Verificar si el token es válido decodificándolo
             try {
-                const response = await axios.get(`${import.meta.env.VITE_API_URL}/users/me`, {
-                    headers: { Authorization: `Bearer ${accessToken}` }
-                });
+                // Decodificar el JWT para verificar expiración
+                const tokenParts = accessToken.split('.');
+                if (tokenParts.length !== 3) {
+                    throw new Error('Invalid token format');
+                }
 
-                if (response.data && response.data.data) {
+                const payload = JSON.parse(atob(tokenParts[1]));
+                const currentTime = Math.floor(Date.now() / 1000);
+
+                // Si el token no ha expirado, consideramos que el usuario está autenticado
+                if (payload.exp && payload.exp > currentTime) {
+                    // Token válido, crear objeto de usuario básico desde el payload
+                    const user = {
+                        id: payload.userId || payload.sub,
+                        username: payload.username,
+                        email: payload.email,
+                        role: payload.role,
+                        // Agregar más campos según la estructura del token
+                    };
+
                     dispatch({
                         type: 'LOGIN_SUCCESS',
                         payload: {
-                            user: response.data.data,
+                            user,
                             accessToken,
                             refreshToken,
                         },
                     });
-                } else {
-                    throw new Error('Invalid user data');
+                    return;
                 }
-            } catch (error: unknown) {
-                const axiosError = error as { response?: { status: number } };
-                if (axiosError.response?.status === 401) {
-                    // Token expirado, intentar refrescar
-                    const refreshSuccess = await refreshAccessToken();
-                    if (!refreshSuccess) {
-                        dispatch({ type: 'AUTH_ERROR' });
-                    }
-                } else {
+
+                // Token expirado, intentar refrescar
+                const refreshSuccess = await refreshAccessToken();
+                if (!refreshSuccess) {
+                    dispatch({ type: 'AUTH_ERROR' });
+                }
+                
+            } catch (error) {
+                console.error('Error decoding token:', error);
+                // Si hay error decodificando, intentar refrescar token
+                const refreshSuccess = await refreshAccessToken();
+                if (!refreshSuccess) {
                     dispatch({ type: 'AUTH_ERROR' });
                 }
             }

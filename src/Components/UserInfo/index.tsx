@@ -1,4 +1,6 @@
 import React from 'react';
+import { IonIcon } from '@ionic/react';
+import { logOutOutline } from 'ionicons/icons';
 import { useAuth } from '../../Library/Hooks/useAuth';
 
 interface UserInfoProps {
@@ -17,40 +19,35 @@ export const UserInfo: React.FC<UserInfoProps> = ({ className = '' }) => {
     };
 
     return (
-        <div className={`flex items-center space-x-3 ${className}`}>
-            <div className="flex flex-col text-right">
-                <span className="text-sm font-medium text-gray-700">
-                    {user.name || user.username}
-                </span>
-                {user.role && (
-                    <span className="text-xs text-gray-500 capitalize">
-                        {user.role}
+        <div className={`flex items-center justify-between w-full space-x-3 ${className}`}>
+            {/* Información del usuario */}
+            <div className="flex items-center space-x-3">
+                <div className="flex flex-col text-right">
+                    <span className="text-sm font-medium text-gray-700">
+                        {user.nombre || user.name || user.username}
                     </span>
-                )}
-            </div>
-            
-            <div className="relative group">
-                <button className="flex items-center justify-center w-8 h-8 bg-blue-950 text-white rounded-full text-sm font-medium hover:bg-blue-800 transition-colors">
-                    {(user.name || user.username).charAt(0).toUpperCase()}
-                </button>
+                    {user.role && (
+                        <span className="text-xs text-gray-500 capitalize">
+                            {user.role}
+                        </span>
+                    )}
+                </div>
                 
-                {/* Dropdown menu */}
-                <div className="absolute right-0 mt-2 w-48 bg-white rounded-md shadow-lg opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 z-50">
-                    <div className="py-1">
-                        <div className="px-4 py-2 text-sm text-gray-700 border-b">
-                            <div className="font-medium">{user.name || user.username}</div>
-                            <div className="text-xs text-gray-500">{user.role}</div>
-                        </div>
-                        
-                        <button
-                            onClick={handleLogout}
-                            className="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 transition-colors"
-                        >
-                            Cerrar Sesión
-                        </button>
-                    </div>
+                {/* Avatar */}
+                <div className="flex items-center justify-center w-8 h-8 bg-blue-950 text-white rounded-full text-sm font-medium">
+                    {(user.nombre || user.name || user.username).charAt(0).toUpperCase()}
                 </div>
             </div>
+
+            {/* Botón de logout */}
+            <button
+                onClick={handleLogout}
+                className="flex items-center justify-center w-8 h-8 bg-red-600 text-white rounded-full hover:bg-red-700 transition-colors focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2"
+                title="Cerrar Sesión"
+                aria-label="Cerrar Sesión"
+            >
+                <IonIcon icon={logOutOutline} className="w-4 h-4" />
+            </button>
         </div>
     );
 };

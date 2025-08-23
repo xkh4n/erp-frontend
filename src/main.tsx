@@ -5,8 +5,8 @@ import './index.css'
 import Routes from './Routes'
 import { AuthProvider } from './Library/Context/AuthContext'
 
-// Registrar Service Worker para PWA
-if ('serviceWorker' in navigator) {
+// Registrar Service Worker para PWA solo en producción
+if ('serviceWorker' in navigator && import.meta.env.PROD) {
   window.addEventListener('load', () => {
     navigator.serviceWorker.register('/sw.js')
       .then((registration) => {

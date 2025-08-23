@@ -1,19 +1,11 @@
 import { saveOutline, checkmarkOutline, trashOutline } from "ionicons/icons";
 import { IonIcon } from "@ionic/react";
-import { useState, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
+import { useState, useEffect, useCallback } from "react";
+import { useNavigate, useLocation } from "react-router-dom";
 import axios from "axios";
 import { Toast, showApprovalToast, showRejectionToast, showErrorToast, showInfoToast } from '../../../../Components/Toast';
 
-import {
-    CustomError
-} from "../../../../Library/Errores";
-
-type ErrorState = {
-        code: number;
-        message: string;
-        detail: string;
-};
+import { handleError } from "../../../../Library/Utils/errorHandler";
 
 type Gerencia = {
     _id: string;
@@ -29,7 +21,6 @@ type Categorias = {
     nombre: string;
     descripcion: string;
 };
-
 
 type Producto = {
     _id: string;
@@ -51,6 +42,12 @@ type ElementoSolicitud = {
 
 export default function CrearSolicitud() {
     const navigate = useNavigate();
+    const location = useLocation();
+    
+    // Función helper para manejo de errores con contexto fijo
+    const handleErrorWithContext = useCallback((error: unknown) => {
+        handleError(error, navigate, location.pathname);
+    }, [navigate, location.pathname]);
     const [nroSolicitud, setNroSolicitud] = useState("");
     const [solicitante, setSolicitante] = useState("");
     const [cargoSolicitante, setCargoSolicitante] = useState("");
@@ -79,11 +76,11 @@ export default function CrearSolicitud() {
                 );
                 setGerencias(response.data.data);
             } catch (error) {
-                handleError(error, navigate);
+                handleErrorWithContext(error);
             }
         };
         fetchGerencias();
-    }, []);
+    }, [handleErrorWithContext]);
 
     // Cargar las categorías al montar el componente
     useEffect(() => {
@@ -95,11 +92,11 @@ export default function CrearSolicitud() {
                 console.log("Se piden las categorias");
                 setCategorias(response.data.data);
             } catch (error) {
-                handleError(error, navigate);
+                handleErrorWithContext(error);
             }
         };
         fetchCategorias();
-    }, []);
+    }, [handleErrorWithContext]);
 
     //Cargar los productos al seleccionar una categoría
     useEffect(() => {
@@ -141,35 +138,12 @@ export default function CrearSolicitud() {
                     pad(now.getMilliseconds(), 3);
                 setNroSolicitud(nro);
             } catch (error) {
-                handleError(error, navigate);
+                handleErrorWithContext(error);
             }
         };
         creaSolicitud();
-    }, []);
+    }, [handleErrorWithContext]);
 
-    function handleError(
-        error: unknown,
-        navigate: (path: string, options?: { state: ErrorState }) => void
-    ) {
-        if (error instanceof CustomError) {
-            const errorData = error.toJSON();
-            navigate("/error", {
-                state: {
-                    code: errorData.code,
-                    message: errorData.message,
-                    detail: errorData.details
-                }
-            });
-        } else if (error instanceof axios.AxiosError) {
-            navigate("/error", {
-                state: {
-                    code: error.response?.status || 500,
-                    message: error.message || "Network Error",
-                    detail: error.response?.statusText || "Unknown error"
-                }
-            });
-        }
-    }
     // Función para manejar el envío del formulario
     const handlerSubmit = async () => {
         try {
@@ -219,7 +193,7 @@ export default function CrearSolicitud() {
                 showErrorToast(error.message);
             } else {
                 showErrorToast("Error desconocido al procesar la solicitud");
-                handleError(error, navigate);
+                handleErrorWithContext(error);
             }
         }
     };
