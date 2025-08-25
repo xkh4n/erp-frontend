@@ -8,6 +8,7 @@ import { IonIcon } from "@ionic/react";
 import axios from "axios";
 import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
+import { useAuth } from "../../../../Library/Context/AuthContext";
 
 type country = {
         _id: string;
@@ -34,6 +35,7 @@ type estado = {
 export default function CrearProveedor() {
     const navigate = useNavigate();
     const location = useLocation();
+    const { accessToken, isAuthenticated } = useAuth();
 
     // Función helper para manejo de errores con contexto fijo
     const handleErrorWithContext = useCallback((error: unknown) => {
@@ -65,8 +67,20 @@ export default function CrearProveedor() {
     useEffect(() => {
         const fetchPaises = async () => {
             try {
+                if (!isAuthenticated || !accessToken) {
+                    console.warn('Usuario no autenticado para cargar países');
+                    return;
+                }
+
                 const response = await axios.post(
-                    `${import.meta.env.VITE_API_URL}/pais/todos`
+                    `${import.meta.env.VITE_API_URL}/pais/todos`,
+                    {},
+                    {
+                        headers: {
+                            'Authorization': `Bearer ${accessToken}`,
+                            'Content-Type': 'application/json'
+                        }
+                    }
                 );
                 setPaises(response.data.data);
             } catch (error) {
@@ -74,7 +88,7 @@ export default function CrearProveedor() {
             }
         };
         fetchPaises();
-    }, [handleErrorWithContext]);
+    }, [handleErrorWithContext, isAuthenticated, accessToken]);
 
     useEffect(() => {
         if (!selectedPais) {
@@ -83,9 +97,20 @@ export default function CrearProveedor() {
         }
         const fetchCiudades = async () => {
             try {
+                if (!isAuthenticated || !accessToken) {
+                    console.warn('Usuario no autenticado para cargar ciudades');
+                    return;
+                }
+
                 const response = await axios.post(
                     `${import.meta.env.VITE_API_URL}/ciudad/citybycountry`,
-                    { country: selectedPais }
+                    { country: selectedPais },
+                    {
+                        headers: {
+                            'Authorization': `Bearer ${accessToken}`,
+                            'Content-Type': 'application/json'
+                        }
+                    }
                 );
                 setCiudades(response.data.data);
             } catch (error) {
@@ -93,7 +118,7 @@ export default function CrearProveedor() {
             }
         };
         fetchCiudades();
-    }, [selectedPais, handleErrorWithContext]);
+    }, [selectedPais, handleErrorWithContext, isAuthenticated, accessToken]);
 
     useEffect(() => {
         if (!selectedCiudad) {
@@ -102,9 +127,20 @@ export default function CrearProveedor() {
         }
         const fetchComunas = async () => {
             try {
+                if (!isAuthenticated || !accessToken) {
+                    console.warn('Usuario no autenticado para cargar comunas');
+                    return;
+                }
+
                 const response = await axios.post(
                     `${import.meta.env.VITE_API_URL}/comuna/ciudad`,
-                    { ciudad: selectedCiudad }
+                    { ciudad: selectedCiudad },
+                    {
+                        headers: {
+                            'Authorization': `Bearer ${accessToken}`,
+                            'Content-Type': 'application/json'
+                        }
+                    }
                 );
                 setComunas(response.data.data);
             } catch (error) {
@@ -112,7 +148,7 @@ export default function CrearProveedor() {
             }
         };
         fetchComunas();
-    }, [selectedCiudad, handleErrorWithContext]);
+    }, [selectedCiudad, handleErrorWithContext, isAuthenticated, accessToken]);
 
     const validateField = (fieldValue: string) => {
             if (!IsParagraph(fieldValue) || fieldValue === "") {
@@ -213,6 +249,7 @@ export default function CrearProveedor() {
                 dataSend,
                 {
                     headers: {
+                        'Authorization': `Bearer ${accessToken}`,
                         "Content-Type": "application/json"
                     },
                     timeout: 3000 // timeout de 3 segundos

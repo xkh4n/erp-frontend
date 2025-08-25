@@ -36,11 +36,24 @@ export default function CrearCategoria() {
             const response = await axios.post(
                 `${import.meta.env.VITE_API_URL}/categoria/todos`
             );
-            setCategorias(response.data.data);
+            
+            // Manejar respuesta exitosa, incluso con array vacío
+            if (response.data.codigo === 200) {
+                setCategorias(response.data.data || []);
+                if (response.data.data?.length === 0) {
+                    console.log('No hay categorías disponibles. Se puede crear la primera categoría.');
+                }
+            } else {
+                setCategorias([]);
+                console.warn('Respuesta inesperada del servidor:', response.data);
+            }
         } catch (error) {
-            handleErrorWithContext(error);
+            // Solo manejar errores reales del servidor, no cuando no hay datos
+            console.error('Error al obtener categorías:', error);
+            setCategorias([]); // Establecer array vacío para permitir crear la primera categoría
+            // No llamar handleErrorWithContext aquí para evitar redirecciones innecesarias
         }
-    }, [handleErrorWithContext]);
+    }, []);
 
     useEffect(() => {
         fetchCategorias();
@@ -54,53 +67,68 @@ export default function CrearCategoria() {
 			
 			// Verificar si hay datos válidos en la respuesta
 			if (!response.data || !response.data.data || !response.data.data.codigo) {
-				// Si no hay categorías, empezar con TIP001
-				return "TIP001";
+				// Si no hay categorías, empezar con CAT001
+				console.log('No hay categorías previas, iniciando con CAT001');
+				return "CAT001";
 			}
 			
 			// Verificar el formato del código y extraer la parte numérica
 			const codigoCompleto = response.data.data.codigo;
+			console.log('Último código encontrado:', codigoCompleto);
 			let codigoNumerico = "";
 			
 			if (codigoCompleto.startsWith("CAT")) {
-				// Si el formato es TIP004, extraer solo el número
+				// Si el formato es CAT004, extraer solo el número
 				codigoNumerico = codigoCompleto.substring(3); // "004"
 			} else {
 				// Si tiene otro formato, usar toda la cadena
 				codigoNumerico = codigoCompleto;
 			}
 			
+			console.log('Código numérico extraído:', codigoNumerico);
+			
 			// Convertir a entero, sumar 1, y formatear con ceros a la izquierda
 			const numeroActual = parseInt(codigoNumerico, 10);
 			
 			// Verificar si el número es válido
 			if (isNaN(numeroActual)) {
-				// Si no se puede convertir a número, empezar con TIP001
+				// Si no se puede convertir a número, empezar con CAT001
+				console.log('Número inválido, usando CAT001 por defecto');
 				return "CAT001";
 			}
 			
 			const numeroSiguiente = numeroActual + 1;
 			const codigoNuevo = `CAT${numeroSiguiente.toString().padStart(3, '0')}`;
 			
+			console.log('Nuevo código generado:', codigoNuevo);
 			return codigoNuevo; // Retornar el nuevo código completo
 		} catch (error) {
-			// Si hay error en el request, empezar con TIP001
+			// Si hay error en el request, empezar con CAT001
 			console.warn("Error al obtener la última categoría, usando código por defecto:", error);
 			return "CAT001";
 		}
 	}
 
 	const clearFields = () => {
+		console.log('Limpiando campos...');
+		console.log('Valor anterior de selectedCategoria:', selectedCategoria);
 		setSelectedCategoria("");
 		setTipoCategoria("");
 		setNombreCategoria("");
 		setDescripcion("");
+		console.log('Campos limpiados - selectedCategoria debería estar vacío');
 		// No limpiar las categorías aquí para mantener el select poblado
 	}
 
 
 	const handlerSubmit = async () => {
 		try {
+			console.log('=== INICIO handlerSubmit ===');
+			console.log('selectedCategoria:', selectedCategoria);
+			console.log('nombreCategoria:', nombreCategoria);
+			console.log('tipoCategoria:', tipoCategoria);
+			console.log('descripcion:', descripcion);
+			
 			if(!IsParagraph(nombreCategoria) || nombreCategoria === "") {
 				showErrorToast(`Error al Validar el Nombre de la Categoría: ${nombreCategoria}`);
 				return;
@@ -121,11 +149,16 @@ export default function CrearCategoria() {
 			// Determinar el código según la selección
 			let codigoObtenido = "";
 			
+			console.log('Valor seleccionado en el combo:', selectedCategoria);
+			
 			if (selectedCategoria === "new") {
 				// Si es nueva categoría, obtener el próximo código disponible
+				console.log('Creando nueva categoría, obteniendo próximo código...');
 				codigoObtenido = await getLastCategoria();
+				console.log('Código generado para nueva categoría:', codigoObtenido);
 			} else {
 				// Si es categoría existente, usar el código seleccionado
+				console.log('Usando categoría existente con código:', selectedCategoria);
 				codigoObtenido = selectedCategoria;
 			}
 			
@@ -134,6 +167,8 @@ export default function CrearCategoria() {
 				showErrorToast(`Error al generar el código de la categoría: ${codigoObtenido}`);
 				return;
 			}
+			
+			console.log('Código final a enviar:', codigoObtenido);
 			
 			const datosEnviar = [
 				{

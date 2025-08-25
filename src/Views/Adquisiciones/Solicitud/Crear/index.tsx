@@ -4,16 +4,17 @@ import { useState, useEffect, useCallback } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import axios from "axios";
 import { Toast, showApprovalToast, showRejectionToast, showErrorToast, showInfoToast } from '../../../../Components/Toast';
+import { useAuth } from "../../../../Library/Context/AuthContext";
 
 import { handleError } from "../../../../Library/Utils/errorHandler";
 
-type Gerencia = {
+type Ccostos = {
     _id: string;
     codigo: string;
     nombre: string;
     descripcion: string;
-    estado: boolean;
 };
+
 
 type Categorias = {
     _id: string;
@@ -43,6 +44,7 @@ type ElementoSolicitud = {
 export default function CrearSolicitud() {
     const navigate = useNavigate();
     const location = useLocation();
+    const { accessToken, isAuthenticated } = useAuth();
     
     // Función helper para manejo de errores con contexto fijo
     const handleErrorWithContext = useCallback((error: unknown) => {
@@ -53,13 +55,13 @@ export default function CrearSolicitud() {
     const [cargoSolicitante, setCargoSolicitante] = useState("");
     const [beneficiario, setBeneficiario] = useState("");
     const [cantidad, setCantidad] = useState("");
-    const [selectedGerencia, setSelectedGerencia] = useState("");
+    const [selectedCentroCosto, setSelectedCentroCosto] = useState("");
     const [emailSolicitante, setEmailSolicitante] = useState("");
     const [telefonoSolicitante, setTelefonoSolicitante] = useState("");
     const [telefonoBeneficiario, setTelefonoBeneficiario] = useState("");
     const [cuentaBeneficiario, setCuentaBeneficiario] = useState("");
     const [observaciones, setObservaciones] = useState("");
-    const [gerencias, setGerencias] = useState<Gerencia[]>([]);
+    const [centroCostos, setCentroCostos] = useState<Ccostos[]>([]);
     const [categorias, setCategorias] = useState<Categorias[]>([]);
     const [selectedCategoria, setSelectedCategoria] = useState("");
     const [productos, setProductos] = useState<Producto[]>([]);
@@ -67,45 +69,91 @@ export default function CrearSolicitud() {
     const [elementosSolicitud, setElementosSolicitud] = useState<ElementoSolicitud[]>([]);
 
 
-    // Cargar las gerencias al montar el componente
+    // Cargar los centros de costos al montar el componente
     useEffect(() => {
-        const fetchGerencias = async () => {
+        const fetchCentroCostos = async () => {
             try {
+                if (!isAuthenticated || !accessToken) {
+                    console.warn('Usuario no autenticado para cargar centros de costo');
+                    return;
+                }
+
                 const response = await axios.post(
-                    `${import.meta.env.VITE_API_URL}/gerencia/todas`
+                    `${import.meta.env.VITE_API_URL}/ccosto/getall`,
+                    {
+                        page: 1,
+                        limit: 9999,
+                        sortBy: 'nombre',
+                        sortOrder: 'asc'
+                    },
+                    {
+                        headers: {
+                            'Authorization': `Bearer ${accessToken}`,
+                            'Content-Type': 'application/json'
+                        }
+                    }
                 );
-                setGerencias(response.data.data);
+                setCentroCostos(response.data.data.centros || []);
             } catch (error) {
                 handleErrorWithContext(error);
             }
         };
-        fetchGerencias();
-    }, [handleErrorWithContext]);
+        
+        if (isAuthenticated) {
+            fetchCentroCostos();
+        }
+    }, [handleErrorWithContext, isAuthenticated, accessToken]);
 
     // Cargar las categorías al montar el componente
     useEffect(() => {
         const fetchCategorias = async () => {
             try {
+                if (!isAuthenticated || !accessToken) {
+                    console.warn('Usuario no autenticado para cargar categorías');
+                    return;
+                }
+
                 const response = await axios.post(
-                    `${import.meta.env.VITE_API_URL}/categoria/todos`
+                    `${import.meta.env.VITE_API_URL}/categoria/todos`,
+                    {},
+                    {
+                        headers: {
+                            'Authorization': `Bearer ${accessToken}`,
+                            'Content-Type': 'application/json'
+                        }
+                    }
                 );
                 console.log("Se piden las categorias");
-                setCategorias(response.data.data);
+                setCategorias(response.data.data || []);
             } catch (error) {
                 handleErrorWithContext(error);
             }
         };
-        fetchCategorias();
-    }, [handleErrorWithContext]);
+        
+        if (isAuthenticated) {
+            fetchCategorias();
+        }
+    }, [handleErrorWithContext, isAuthenticated, accessToken]);
 
     //Cargar los productos al seleccionar una categoría
     useEffect(() => {
         const fetchProductosByCategoria = async () => {
             try {
+                if (!isAuthenticated || !accessToken) {
+                    console.warn('Usuario no autenticado para cargar productos');
+                    return;
+                }
+
                 if (selectedCategoria && selectedCategoria.trim() !== "") {
                     const response = await axios.post(
                         `${import.meta.env.VITE_API_URL}/producto/idcategoria`,
-                        { id: selectedCategoria }
+                        { id: selectedCategoria },
+                        {
+                            headers: {
+                                'Authorization': `Bearer ${accessToken}`,
+                                'Content-Type': 'application/json'
+                            }
+                        }
                     );
                     if(response.data.data && response.data.data.length > 0) {
                         setProductos(response.data.data);
@@ -120,8 +168,11 @@ export default function CrearSolicitud() {
                 showRejectionToast(error instanceof Error ? error.message : "Error al cargar los productos");
             }
         };
-        fetchProductosByCategoria();
-    }, [selectedCategoria]);
+        
+        if (isAuthenticated) {
+            fetchProductosByCategoria();
+        }
+    }, [selectedCategoria, isAuthenticated, accessToken]);
 
     useEffect(() => {
         const creaSolicitud = async () => {
@@ -154,7 +205,7 @@ export default function CrearSolicitud() {
             }
 
             // Validar campos obligatorios del formulario principal
-            if (!solicitante || !cargoSolicitante || !beneficiario || !selectedGerencia || 
+            if (!solicitante || !cargoSolicitante || !beneficiario || !selectedCentroCosto || 
                 !emailSolicitante || !telefonoSolicitante || !telefonoBeneficiario || !cuentaBeneficiario) {
                 showErrorToast("Por favor complete todos los campos obligatorios");
                 return;
@@ -172,16 +223,17 @@ export default function CrearSolicitud() {
                 "solicitante": solicitante,
                 "cargoSolicitante": cargoSolicitante,
                 "beneficiario": beneficiario,
-                "gerencia": selectedGerencia,
+                "ccosto": selectedCentroCosto,
                 "emailSolicitante": emailSolicitante,
                 "telefonoSolicitante": telefonoSolicitante,
                 "telefonoBeneficiario": telefonoBeneficiario,
-                "cuentaBeneficiario": cuentaBeneficiario,
+                "cuentaBeneficiario": cuentaBeneficiario.toLowerCase(),
                 "observaciones": observaciones,
                 "detalleSolicitud": detalleSolicitud
             };
             await axios.put(`${import.meta.env.VITE_API_URL}/solicitud/nueva`, dataSend,{
                 headers: {
+                    'Authorization': `Bearer ${accessToken}`,
                     'Content-Type': 'application/json'
                 }
             });
@@ -265,9 +317,20 @@ export default function CrearSolicitud() {
         // Cargar los productos de la categoría seleccionada
         const fetchProductosByCategoria = async () => {
             try {
+                if (!isAuthenticated || !accessToken) {
+                    console.warn('Usuario no autenticado para cargar productos');
+                    return;
+                }
+
                 const response = await axios.post(
                     `${import.meta.env.VITE_API_URL}/producto/idcategoria`,
-                    { id: elemento.tipoEquipamiento }
+                    { id: elemento.tipoEquipamiento },
+                    {
+                        headers: {
+                            'Authorization': `Bearer ${accessToken}`,
+                            'Content-Type': 'application/json'
+                        }
+                    }
                 );
                 if(response.data.data && response.data.data.length > 0) {
                     setProductos(response.data.data);
@@ -291,7 +354,7 @@ export default function CrearSolicitud() {
         setSolicitante("");
         setCargoSolicitante("");
         setBeneficiario("");
-        setSelectedGerencia("");
+        setSelectedCentroCosto("");
         setEmailSolicitante("");
         setTelefonoSolicitante("");
         setTelefonoBeneficiario("");
@@ -411,13 +474,13 @@ export default function CrearSolicitud() {
                                 name="centro_costo"
                                 className="w-full px-3 py-2 md:px-4 md:py-2 rounded-lg shadow-sm"
                                 required
-                                value={selectedGerencia}
-                                onChange={(e) => setSelectedGerencia(e.target.value)}
+                                value={selectedCentroCosto}
+                                onChange={(e) => setSelectedCentroCosto(e.target.value)}
                             >
-                                <option value="">Seleccione su Gerencia</option>
-                                {gerencias.map((gerencia) => (
-                                    <option key={gerencia._id} value={gerencia._id}>
-                                        {gerencia.nombre}
+                                <option value="">Seleccione su Centro de Costo</option>
+                                {centroCostos.map((centroCosto) => (
+                                    <option key={centroCosto._id} value={centroCosto._id}>
+                                        {centroCosto.nombre}
                                     </option>
                                 ))}
                             </select>

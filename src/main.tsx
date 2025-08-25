@@ -1,9 +1,14 @@
-import { StrictMode } from 'react'
+import React, { StrictMode } from 'react'
 import { createRoot } from 'react-dom/client'
 
 import './index.css'
 import Routes from './Routes'
 import { AuthProvider } from './Library/Context/AuthContext'
+
+// Configurar título de la aplicación desde variable de entorno
+if (import.meta.env.VITE_APP_TITLE) {
+  document.title = import.meta.env.VITE_APP_TITLE;
+}
 
 // Registrar Service Worker para PWA solo en producción
 if ('serviceWorker' in navigator && import.meta.env.PROD) {
@@ -18,10 +23,21 @@ if ('serviceWorker' in navigator && import.meta.env.PROD) {
   });
 }
 
+// Componente wrapper condicional para StrictMode
+const AppWrapper = ({ children }: { children: React.ReactNode }) => {
+  // En desarrollo, deshabilitamos StrictMode para evitar el doble montaje
+  if (import.meta.env.VITE_NODE_ENV === 'development') {
+    return <>{children}</>;
+  }
+  
+  // En producción y otros entornos, usamos StrictMode
+  return <StrictMode>{children}</StrictMode>;
+};
+
 createRoot(document.getElementById('root')!).render(
-    <StrictMode>
+    <AppWrapper>
         <AuthProvider>
             <Routes />
         </AuthProvider>
-    </StrictMode>,
+    </AppWrapper>
 )

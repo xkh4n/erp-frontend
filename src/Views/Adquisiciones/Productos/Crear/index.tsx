@@ -8,6 +8,7 @@ import { handleError } from "../../../../Library/Utils/errorHandler";
 import axios from "axios";
 import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
+import { useAuth } from "../../../../Library/Context/AuthContext";
 
 
 type Categoria = {
@@ -20,6 +21,7 @@ type Categoria = {
 export default function CrearProducto() {
 	const navigate = useNavigate();
 	const location = useLocation();
+	const { accessToken, isAuthenticated } = useAuth();
 
 	// Función helper para manejo de errores con contexto fijo
 	const handleErrorWithContext = useCallback((error: unknown) => {
@@ -36,8 +38,20 @@ export default function CrearProducto() {
     useEffect(() => {
         const fetchCategorias = async () => {
             try {
+                if (!isAuthenticated || !accessToken) {
+                    console.warn('Usuario no autenticado para cargar categorías');
+                    return;
+                }
+
                 const response = await axios.post(
-                    `${import.meta.env.VITE_API_URL}/categoria/todos`
+                    `${import.meta.env.VITE_API_URL}/categoria/todos`,
+                    {},
+                    {
+                        headers: {
+                            'Authorization': `Bearer ${accessToken}`,
+                            'Content-Type': 'application/json'
+                        }
+                    }
                 );
                 setCategorias(response.data.data);
             } catch (error) {
@@ -45,7 +59,7 @@ export default function CrearProducto() {
             }
         };
         fetchCategorias();
-    }, [handleErrorWithContext]);
+    }, [handleErrorWithContext, isAuthenticated, accessToken]);
 
 	const validateField = (fieldValue: string, fieldName: string) => {
 		try {
@@ -88,6 +102,7 @@ export default function CrearProducto() {
 				datosEnviar,
 				{
 					headers: {
+						'Authorization': `Bearer ${accessToken}`,
 						"Content-Type": "application/json"
 					},
 					timeout: 3000 // timeout de 3 segundos

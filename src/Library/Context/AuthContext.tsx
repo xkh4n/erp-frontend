@@ -195,6 +195,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
                     const user = {
                         id: payload.userId || payload.sub,
                         username: payload.username,
+                        nombre: payload.nombre,
                         email: payload.email,
                         role: payload.role,
                         // Agregar más campos según la estructura del token

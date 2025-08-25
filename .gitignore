@@ -27,3 +27,11 @@ docker-compose.yml
 *.njsproj
 *.sln
 *.sw?
+
+# Vite specific
+vite.config.ts.timestamp-*
+*.timestamp-*
+
+# Docker and development
+.docker/
+*.tmp

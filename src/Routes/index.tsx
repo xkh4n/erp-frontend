@@ -23,7 +23,12 @@ import LoginGuard from "../Components/LoginGuard";
 
 export default function index() {
     return (
-        <BrowserRouter>
+        <BrowserRouter
+            future={{
+                v7_startTransition: true,
+                v7_relativeSplatPath: true
+            }}
+        >
             <Routes>
                 <Route element={<MainLayout />}>
                     <Route path="/" element={
@@ -101,6 +106,11 @@ export default function index() {
                             <AgregarProducto />
                         </ProtectedRoute>
                     } />
+                    <Route path="/asignacion" element={
+                        <ProtectedRoute>
+                            <Asignar />
+                        </ProtectedRoute>
+                    } />
                 </Route>
                 <Route element={<LoginLayout />}>
                     <Route path="/login" element={
@@ -123,7 +133,7 @@ export default function index() {
 }
 const ErrorPageWrapper = () => {
     const location = useLocation();
-    const { code, message, detail } = location.state || {};
+    const { code, message, detail, actionButton } = location.state || {};
   
-    return <ErrorPage code={code} message={message} detail={detail} />;
+    return <ErrorPage code={code} message={message} detail={detail} actionButton={actionButton} />;
 };

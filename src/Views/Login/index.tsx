@@ -96,7 +96,7 @@ export default function Index() {
                                 onChange={setPassword}
                                 validator={IsPassword}
                                 errorMessage="La contraseña debe tener al menos 8 caracteres, una mayúscula, una minúscula y un carácter especial"
-                                realTimeValidation={true}
+                                realTimeValidation={false}
                                 required={true}
                             />
                             

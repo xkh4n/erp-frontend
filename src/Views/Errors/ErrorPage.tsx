@@ -8,9 +8,13 @@ interface ErrorProps {
     code: number;
     message: string;
     detail?: string;
+    actionButton?: {
+        text: string;
+        path: string;
+    };
 }
 
-const ErrorPage: React.FC<ErrorProps> = ({ code, message, detail }) => {
+const ErrorPage: React.FC<ErrorProps> = ({ code, message, detail, actionButton }) => {
     const navigate = useNavigate();
     const location = useLocation();
     
@@ -54,6 +58,12 @@ const ErrorPage: React.FC<ErrorProps> = ({ code, message, detail }) => {
         navigate('/');
     };
 
+    const handleActionButton = () => {
+        if (actionButton?.path) {
+            navigate(actionButton.path);
+        }
+    };
+
     return (
         <div className="w-full h-screen flex flex-col items-center justify-center">
             <img 
@@ -66,6 +76,15 @@ const ErrorPage: React.FC<ErrorProps> = ({ code, message, detail }) => {
                 <p className="mt-8 text-2xl md:text-3xl lg:text-4xl font-bold text-red-600">{message}</p>
                 <p className="md:text-lg xl:text-xl text-amber-400 mt-4">{detail}</p>
                 <div className="flex gap-4 mt-6">
+                    {actionButton && (
+                        <button
+                            type="button"
+                            onClick={handleActionButton}
+                            className="flex items-center gap-2 px-6 py-2 bg-green-600 text-white rounded-full hover:bg-green-700 shadow-green-600/50 transition delay-10 duration-300 ease-in-out hover:translate-y-1"
+                        >
+                            {actionButton.text}
+                        </button>
+                    )}
                     <button
                         type="button"
                         onClick={handleGoBack}
