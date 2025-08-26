@@ -1,24 +1,17 @@
 import { saveOutline } from "ionicons/icons";
 import { IonIcon } from "@ionic/react";
-import { useState, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
+import { useState, useEffect, useCallback } from "react";
+import { useNavigate, useLocation } from "react-router-dom";
 
 import { Toast, showApprovalToast, showErrorToast } from '../../../../Components/Toast';
 
-import {
-    CustomError
-} from "../../../../Library/Errores";
+import { handleError } from "../../../../Library/Utils/errorHandler";
 import axios from "axios";
 /*
 showApprovalToast, showRejectionToast, showErrorToast, showInfoToast, showPendingToast, showProcessingToast
 */
 
 /* TYPES */
-type ErrorState = {
-        code: number;
-        message: string;
-        detail: string;
-};
 
 type Gerencia = {
     _id: string;
@@ -51,6 +44,12 @@ type Producto = {
 /* COMPONENT */
 export default function AgregarProducto() {
     const navigate = useNavigate();
+    const location = useLocation();
+
+    // Función helper para manejo de errores con contexto fijo
+    const handleErrorWithContext = useCallback((error: unknown) => {
+        handleError(error, navigate, location.pathname);
+    }, [navigate, location.pathname]);
 
 
     const [selectedGerencia, setSelectedGerencia] = useState("");
@@ -82,11 +81,11 @@ useEffect(() => {
             );
             setGerencias(response.data.data);
         } catch (error) {
-            handleError(error, navigate);
+            handleErrorWithContext(error);
         }
     };
     fetchGerencias();
-},[]);
+},[handleErrorWithContext]);
 
 // Cargar las Categorías al montar el componente
 useEffect(() => {
@@ -97,11 +96,11 @@ useEffect(() => {
             );
             setCategorias(response.data.data);
         } catch (error) {
-            handleError(error, navigate);
+            handleErrorWithContext(error);
         }
     };
     fetchCategorias();
-},[]);
+},[handleErrorWithContext]);
 
 useEffect(() => {
     const fetchProveedores = async () => {
@@ -111,11 +110,11 @@ useEffect(() => {
             );
             setProveedores(response.data.data);
         } catch (error) {
-            handleError(error, navigate);
+            handleErrorWithContext(error);
         }
     };
     fetchProveedores();
-}, []);
+}, [handleErrorWithContext]);
 
 useEffect(() => {
     const fetchProductos = async () => {
@@ -125,38 +124,12 @@ useEffect(() => {
             );
             setProductos(response.data.data);
         } catch (error) {
-            handleError(error, navigate);
+            handleErrorWithContext(error);
         }
     };
     fetchProductos();
-}, []);
+}, [handleErrorWithContext]);
 /* END USEEFFECTS */
-
-/* Handler Error */
-    function handleError(
-        error: unknown,
-        navigate: (path: string, options?: { state: ErrorState }) => void
-    ) {
-        if (error instanceof CustomError) {
-            const errorData = error.toJSON();
-            navigate("/error", {
-                state: {
-                    code: errorData.code,
-                    message: errorData.message,
-                    detail: errorData.details
-                }
-            });
-        } else if (error instanceof axios.AxiosError) {
-            navigate("/error", {
-                state: {
-                    code: error.response?.status || 500,
-                    message: error.message || "Network Error",
-                    detail: error.response?.statusText || "Unknown error"
-                }
-            });
-        }
-    }
-/* END Handler Error */
 
 /* Handler Submit */
     const handlerSubmit = async () => {
@@ -168,7 +141,7 @@ useEffect(() => {
 
             showApprovalToast("Producto agregado exitosamente.");
         } catch (error) {
-            handleError(error, navigate);
+            handleErrorWithContext(error);
         }
     };
 /* END Handler Submit */

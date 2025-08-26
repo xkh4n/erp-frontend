@@ -1,17 +1,20 @@
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import { useState, useEffect, useCallback } from "react";
 import axios from "axios";
-import { CustomError } from "../../../../Library/Errores";
+import { handleError } from "../../../../Library/Utils/errorHandler";
+import { useAuth } from "../../../../Library/Context/AuthContext";
 
 
-type ErrorState = {
-    code: number;
-    message: string;
-    detail: string;
-};
-
+type CentroCosto = {
+    _id: string;
+    codigo: string;
+    nombre: string;
+    descripcion: string;
+    fechaCreacion: string;
+    fechaModificacion: string;
+}
 
 type Solicitud = {
     _id: string;
@@ -27,7 +30,7 @@ type Solicitud = {
     estado: string;
     prioridad: string;
     fechaRequerida?: string;
-    centroCosto?: string;
+    centroCosto?: string | CentroCosto;
     observaciones?: string;
 }
 
@@ -77,6 +80,14 @@ type Proveedor = {
 
 export default function IngresoProducto() {
     const navigate = useNavigate();
+    const location = useLocation();
+    const { accessToken, isAuthenticated } = useAuth();
+
+    // Función helper para manejo de errores con contexto fijo
+    const handleErrorWithContext = useCallback((error: unknown) => {
+        handleError(error, navigate, location.pathname);
+    }, [navigate, location.pathname]);
+
     const [solicitud, setSolicitud] = useState<Solicitud[]>([]);
     const [detalleSolicitud, setDetalleSolicitud] = useState<DetalleSolicitud[]>([]);
     
@@ -99,21 +110,19 @@ export default function IngresoProducto() {
     
     // Estados mínimos para mantener funcionalidad
     const [selectedSolicitud, setSelectedSolicitud] = useState("");
-    const [gerenciaID, setGerenciaID] = useState("");
+    const [centroCostoID, setCentroCostoID] = useState("");
     /*
     const [guardaSolicitud, setGuardaSolicitud] = useState(false);
 */
     // Funcion para guardar producto
     const handlerGuardarProducto = async () => {
-        console.log(detalleSolicitud);
-        console.log(selectedProductoRecepcion);
-        const gerencia = gerenciaID;
+        const centroCosto = centroCostoID;
         const saveMarca = newMarca;
         const productoId = selectedProductoRecepcion?.productoId || "";
         const numeroSerie = serialNumber || "";
         const valor = newValor;
 
-        if (!productoId || !numeroSerie || !gerencia || !saveMarca || !selectedProveedor || !tipoDocumento || !numeroDocumento.trim()) {
+        if (!productoId || !numeroSerie || !centroCosto || !saveMarca || !selectedProveedor || !tipoDocumento || !numeroDocumento.trim()) {
             toast.error("Por favor complete todos los campos requeridos", {
                 position: "top-right",
                 autoClose: 3000,
@@ -137,7 +146,7 @@ export default function IngresoProducto() {
             "cantidad": 1, // Siempre enviamos 1 producto por recepción individual
             "numeroSerie": numeroSerie,
             "nroSolicitud": selectedProductoRecepcion?.nroSolicitud || "",
-            "gerencia": gerencia,
+            "centroCosto": centroCosto,
             "valor": valor || "0",
             "modelo": newModelo || "",
             "marca": saveMarca,
@@ -152,6 +161,7 @@ export default function IngresoProducto() {
                 `${import.meta.env.VITE_API_URL}/producto/recibir`,
                 datosEnviar,{
                     headers: {
+                        'Authorization': `Bearer ${accessToken}`,
                         "Content-Type": "application/json"
                     }
                 }
@@ -206,20 +216,31 @@ export default function IngresoProducto() {
                     autoClose: 4000,
                 });
             } else {
-                handleError(error, navigate);
+                handleErrorWithContext(error);
             }
         }
     };
     // Función separada para recargar solicitudes
     const recargarSolicitudes = useCallback(async () => {
         try {
+            if (!isAuthenticated || !accessToken) {
+                console.warn('Usuario no autenticado para cargar solicitudes');
+                return;
+            }
+
             const response = await axios.post(
-                `${import.meta.env.VITE_API_URL}/solicitud/aprobadas`
+                `${import.meta.env.VITE_API_URL}/solicitud/aprobadas`,
+                {},
+                {
+                    headers: {
+                        'Authorization': `Bearer ${accessToken}`,
+                        'Content-Type': 'application/json'
+                    }
+                }
             );
             if (response.data && response.data.codigo === 200) {
                 setSolicitud(response.data.data || []);
             } else {
-                console.error('Error en respuesta de solicitudes:', response.data);
                 setSolicitud([]);
                 toast.error("Error al cargar las solicitudes aprobadas", {
                     position: "top-right",
@@ -242,19 +263,30 @@ export default function IngresoProducto() {
                     });
                 }
             } else {
-                handleError(error, navigate);
+                handleErrorWithContext(error);
             }
         }
-    }, [navigate]);
+    }, [handleErrorWithContext, isAuthenticated, accessToken]);
 
     // Función separada para recargar el detalle de la solicitud
     const recargarDetalleSolicitud = useCallback(async () => {
         if (!selectedSolicitud) return;
         
         try {
+            if (!isAuthenticated || !accessToken) {
+                console.warn('Usuario no autenticado para cargar detalle de solicitud');
+                return;
+            }
+
             const response = await axios.post(
                 `${import.meta.env.VITE_API_URL}/solicitud/detalle/recepcion`,
-                { id: selectedSolicitud }
+                { id: selectedSolicitud },
+                {
+                    headers: {
+                        'Authorization': `Bearer ${accessToken}`,
+                        'Content-Type': 'application/json'
+                    }
+                }
             );
             if (response.data && response.data.codigo === 200) {
                 setDetalleSolicitud(response.data.data || []);
@@ -273,7 +305,6 @@ export default function IngresoProducto() {
                 });
                 setDetalleRecepciones(todasLasRecepciones);
             } else {
-                console.error('Error en respuesta de detalle:', response.data);
                 toast.error("Error al obtener el detalle de la solicitud", {
                     position: "top-right",
                     autoClose: 3000,
@@ -288,31 +319,107 @@ export default function IngresoProducto() {
                 });
             }
         }
-    }, [selectedSolicitud]);
+    }, [selectedSolicitud, isAuthenticated, accessToken]);
 
     // Función para cargar proveedores
     const cargarProveedores = useCallback(async () => {
         try {
+            if (!isAuthenticated || !accessToken) {
+                console.warn('⚠️  Usuario no autenticado - redirigiendo a login');
+                navigate('/error', {
+                    state: {
+                        code: 401,
+                        message: 'Usuario no autenticado',
+                        detail: 'Debe iniciar sesión para acceder a esta funcionalidad.',
+                        actionButton: {
+                            text: 'Iniciar Sesión',
+                            path: '/login'
+                        }
+                    }
+                });
+                return;
+            }
+            
             const response = await axios.post(
-                `${import.meta.env.VITE_API_URL}/proveedor/todos`
+                `${import.meta.env.VITE_API_URL}/proveedor/todos`,
+                {},
+                {
+                    headers: {
+                        'Authorization': `Bearer ${accessToken}`,
+                        'Content-Type': 'application/json'
+                    }
+                }
             );
-            if (response.data && response.data.data.length >= 1) {
+            
+            // Verificar si tenemos proveedores - ajustado para la estructura real del backend
+            if (response.data && response.data.data && Array.isArray(response.data.data) && response.data.data.length >= 1) {
                 setProveedores(response.data.data);
+            } else if (response.data && response.data.data && Array.isArray(response.data.data) && response.data.data.length === 0) {
+                // No hay proveedores en la base de datos - redirigir a error con opción de crear
+                navigate('/error', {
+                    state: {
+                        code: 404,
+                        message: 'No se encontraron Proveedores',
+                        detail: 'Para poder ingresar productos es necesario tener al menos un proveedor registrado en el sistema.',
+                        actionButton: {
+                            text: '¿Quieres Crear el Proveedor?',
+                            path: '/crear_proveedor'
+                        }
+                    }
+                });
             } else {
-                console.error('Error en respuesta de proveedores:', response.data);
                 setProveedores([]);
+                // Solo redirigir a error si realmente no hay data o la estructura es incorrecta
+                if (!response.data || !response.data.data) {
+                    navigate('/error', {
+                        state: {
+                            code: 500,
+                            message: 'Error al cargar proveedores',
+                            detail: 'No se encontraron Proveedores - Estructura de respuesta incorrecta.'
+                        }
+                    });
+                } else {
+                    // Si hay data pero no es array o tiene estructura extraña, intentar usar los datos de todos modos
+                    if (response.data.data) {
+                        setProveedores(response.data.data);
+                    }
+                }
             }
         } catch (error) {
             console.error('Error al cargar proveedores:', error);
             setProveedores([]);
             if (axios.isAxiosError(error)) {
-                toast.error(`Error al cargar proveedores: ${error.message}`, {
-                    position: "top-right",
-                    autoClose: 4000,
-                });
+                if (error.response?.status === 404) {
+                    // Error 404 específico - probablemente no hay proveedores
+                    navigate('/error', {
+                        state: {
+                            code: 404,
+                            message: 'No se encontraron Proveedores',
+                            detail: 'Para poder ingresar productos es necesario tener al menos un proveedor registrado en el sistema.',
+                            actionButton: {
+                                text: '¿Quieres Crear el Proveedor?',
+                                path: '/crear_proveedor'
+                            }
+                        }
+                    });
+                } else {
+                    navigate('/error', {
+                        state: {
+                            code: error.response?.status || 500,
+                            message: 'Error de conexión al cargar proveedores',
+                            detail: 'No se encontraron Proveedores. Verifique que el servidor esté funcionando correctamente.',
+                            actionButton: {
+                                text: '¿Quieres Crear el Proveedor?',
+                                path: '/crear_proveedor'
+                            }
+                        }
+                    });
+                }
+            } else {
+                handleErrorWithContext(error);
             }
         }
-    }, []);
+    }, [navigate, handleErrorWithContext, isAuthenticated, accessToken]);
 
     useEffect(() => {
         recargarSolicitudes();
@@ -322,21 +429,46 @@ export default function IngresoProducto() {
     useEffect(() => {
         if(!selectedSolicitud) return;
         const solicitudCompleta = solicitud.find(s => s._id === selectedSolicitud);
-        const fetchGerencia = async () => {
-            const { data } = await axios.post(`${import.meta.env.VITE_API_URL}/solicitud/gerencia`, { nroSolicitud: solicitudCompleta?.nroSolicitud });
-            setGerenciaID(data.data);
+        const fetchCentroCosto = async () => {
+            if (!isAuthenticated || !accessToken) {
+                console.warn('Usuario no autenticado para cargar centro de costo');
+                return;
+            }
+
+            const { data } = await axios.post(
+                `${import.meta.env.VITE_API_URL}/solicitud/centro-costo`, 
+                { nroSolicitud: solicitudCompleta?.nroSolicitud },
+                {
+                    headers: {
+                        'Authorization': `Bearer ${accessToken}`,
+                        'Content-Type': 'application/json'
+                    }
+                }
+            );
+            setCentroCostoID(data.data);
         };
-        fetchGerencia();
-    }, [selectedSolicitud, solicitud]);
+        fetchCentroCosto();
+    }, [selectedSolicitud, solicitud, isAuthenticated, accessToken]);
     // Función para manejar el cambio de solicitud
     const handleSolicitudChange = async (solicitudId: string) => {
         setSelectedSolicitud(solicitudId);
         
         if (solicitudId) {
             try {
+                if (!isAuthenticated || !accessToken) {
+                    console.warn('Usuario no autenticado para cargar detalle de solicitud');
+                    return;
+                }
+
                 const response = await axios.post(
                     `${import.meta.env.VITE_API_URL}/solicitud/detalle/recepcion`,
-                    { id: solicitudId }
+                    { id: solicitudId },
+                    {
+                        headers: {
+                            'Authorization': `Bearer ${accessToken}`,
+                            'Content-Type': 'application/json'
+                        }
+                    }
                 );
                 if (response.data.codigo === 200) {
                     setDetalleSolicitud(response.data.data);
@@ -509,31 +641,6 @@ export default function IngresoProducto() {
         setDetalleRecepciones([]);
     };
 
-    // Manejo de errores genérico
-    // Esta función maneja los errores y redirige a una página de error con el estado adecuado
-    function handleError(
-        error: unknown,
-        navigate: (path: string, options?: { state: ErrorState }) => void
-    ) {
-        if (error instanceof CustomError) {
-            const errorData = error.toJSON();
-            navigate("/error", {
-                state: {
-                code: errorData.code,
-                message: errorData.message,
-                detail: errorData.details
-                }
-            });
-        } else if (error instanceof axios.AxiosError) {
-            navigate("/error", {
-                state: {
-                code: error.response?.status || 500,
-                message: error.message || "Network Error",
-                detail: error.response?.statusText || "Unknown error"
-                }
-            });
-        }
-    }
     return (
         <div className="flex flex-col items-center justify-center h-max bg-gray-200 p-4 md:p-5 lg:p-6">
         <ToastContainer aria-label="Notificaciones de la aplicación" />
@@ -635,7 +742,11 @@ export default function IngresoProducto() {
                                     {solicitudSeleccionada.centroCosto && (
                                         <div>
                                             <span className="font-medium text-blue-700">Centro de Costo:</span>
-                                            <p className="text-blue-800">{solicitudSeleccionada.centroCosto}</p>
+                                            <p className="text-blue-800">
+                                                {typeof solicitudSeleccionada.centroCosto === 'object' 
+                                                    ? solicitudSeleccionada.centroCosto.nombre || solicitudSeleccionada.centroCosto.codigo || 'N/A'
+                                                    : solicitudSeleccionada.centroCosto}
+                                            </p>
                                         </div>
                                     )}
                                     <div>

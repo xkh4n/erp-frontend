@@ -1,23 +1,15 @@
-import { useNavigate } from "react-router-dom";
-import { useState, useEffect } from "react";
+import { useNavigate, useLocation } from "react-router-dom";
+import { useState, useEffect, useCallback } from "react";
 import { IsBoolean, IsEmail, IsParagraph, IsPhone, IsRut } from "../../../../Library/Validations";
-import {
-        CustomError,
-        createValidationError
-} from "../../../../Library/Errores";
+import { createValidationError } from "../../../../Library/Errores";
+import { handleError } from "../../../../Library/Utils/errorHandler";
 import { saveOutline } from "ionicons/icons";
 import { IonIcon } from "@ionic/react";
-
 import axios from "axios";
-
 import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
+import { useAuth } from "../../../../Library/Context/AuthContext";
 
-type ErrorState = {
-        code: number;
-        message: string;
-        detail: string;
-};
 type country = {
         _id: string;
         iso_code: string;
@@ -42,6 +34,13 @@ type estado = {
 
 export default function CrearProveedor() {
     const navigate = useNavigate();
+    const location = useLocation();
+    const { accessToken, isAuthenticated } = useAuth();
+
+    // Función helper para manejo de errores con contexto fijo
+    const handleErrorWithContext = useCallback((error: unknown) => {
+        handleError(error, navigate, location.pathname);
+    }, [navigate, location.pathname]);
 
     const [paises, setPaises] = useState<country[]>([]);
     const [ciudades, setCiudades] = useState<city[]>([]);
@@ -68,16 +67,28 @@ export default function CrearProveedor() {
     useEffect(() => {
         const fetchPaises = async () => {
             try {
+                if (!isAuthenticated || !accessToken) {
+                    console.warn('Usuario no autenticado para cargar países');
+                    return;
+                }
+
                 const response = await axios.post(
-                    `${import.meta.env.VITE_API_URL}/pais/todos`
+                    `${import.meta.env.VITE_API_URL}/pais/todos`,
+                    {},
+                    {
+                        headers: {
+                            'Authorization': `Bearer ${accessToken}`,
+                            'Content-Type': 'application/json'
+                        }
+                    }
                 );
                 setPaises(response.data.data);
             } catch (error) {
-                handleError(error, navigate);
+                handleErrorWithContext(error);
             }
         };
         fetchPaises();
-    }, []);
+    }, [handleErrorWithContext, isAuthenticated, accessToken]);
 
     useEffect(() => {
         if (!selectedPais) {
@@ -86,17 +97,28 @@ export default function CrearProveedor() {
         }
         const fetchCiudades = async () => {
             try {
+                if (!isAuthenticated || !accessToken) {
+                    console.warn('Usuario no autenticado para cargar ciudades');
+                    return;
+                }
+
                 const response = await axios.post(
                     `${import.meta.env.VITE_API_URL}/ciudad/citybycountry`,
-                    { country: selectedPais }
+                    { country: selectedPais },
+                    {
+                        headers: {
+                            'Authorization': `Bearer ${accessToken}`,
+                            'Content-Type': 'application/json'
+                        }
+                    }
                 );
                 setCiudades(response.data.data);
             } catch (error) {
-                handleError(error, navigate);
+                handleErrorWithContext(error);
             }
         };
         fetchCiudades();
-    }, [selectedPais]);
+    }, [selectedPais, handleErrorWithContext, isAuthenticated, accessToken]);
 
     useEffect(() => {
         if (!selectedCiudad) {
@@ -105,41 +127,28 @@ export default function CrearProveedor() {
         }
         const fetchComunas = async () => {
             try {
+                if (!isAuthenticated || !accessToken) {
+                    console.warn('Usuario no autenticado para cargar comunas');
+                    return;
+                }
+
                 const response = await axios.post(
                     `${import.meta.env.VITE_API_URL}/comuna/ciudad`,
-                    { ciudad: selectedCiudad }
+                    { ciudad: selectedCiudad },
+                    {
+                        headers: {
+                            'Authorization': `Bearer ${accessToken}`,
+                            'Content-Type': 'application/json'
+                        }
+                    }
                 );
                 setComunas(response.data.data);
             } catch (error) {
-                handleError(error, navigate);
+                handleErrorWithContext(error);
             }
         };
         fetchComunas();
-    }, [selectedCiudad]);
-
-    function handleError(
-        error: unknown,
-        navigate: (path: string, options?: { state: ErrorState }) => void
-    ) {
-        if (error instanceof CustomError) {
-            const errorData = error.toJSON();
-            navigate("/error", {
-                state: {
-                    code: errorData.code,
-                    message: errorData.message,
-                    detail: errorData.details
-                }
-            });
-        } else if (error instanceof axios.AxiosError) {
-            navigate("/error", {
-                state: {
-                    code: error.response?.status || 500,
-                    message: error.message || "Network Error",
-                    detail: error.response?.statusText || "Unknown error"
-                }
-            });
-        }
-    }
+    }, [selectedCiudad, handleErrorWithContext, isAuthenticated, accessToken]);
 
     const validateField = (fieldValue: string) => {
             if (!IsParagraph(fieldValue) || fieldValue === "") {
@@ -240,6 +249,7 @@ export default function CrearProveedor() {
                 dataSend,
                 {
                     headers: {
+                        'Authorization': `Bearer ${accessToken}`,
                         "Content-Type": "application/json"
                     },
                     timeout: 3000 // timeout de 3 segundos
@@ -281,7 +291,7 @@ export default function CrearProveedor() {
                 pauseOnHover: true,
                 draggable: true
             });
-            handleError(error, navigate);
+            handleErrorWithContext(error);
         }
     };
 

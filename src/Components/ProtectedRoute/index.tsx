@@ -18,7 +18,7 @@ export const ProtectedRoute: React.FC<ProtectedRouteProps> = ({
     requiredRoles,
     fallbackPath = '/login'
 }) => {
-    const { isAuthenticated, isLoading, hasRole, hasAnyRole } = useAuth();
+    const { isAuthenticated, isLoading, user } = useAuth();
     const location = useLocation();
 
     // Mostrar loading mientras se verifica la autenticación
@@ -37,11 +37,11 @@ export const ProtectedRoute: React.FC<ProtectedRouteProps> = ({
     }
 
     // Verificar roles si se especifican
-    if (requiredRole && !hasRole(requiredRole)) {
+    if (requiredRole && user?.role !== requiredRole) {
         return <Navigate to="/unauthorized" replace />;
     }
 
-    if (requiredRoles && !hasAnyRole(requiredRoles)) {
+    if (requiredRoles && !requiredRoles.includes(user?.role || '')) {
         return <Navigate to="/unauthorized" replace />;
     }
 
