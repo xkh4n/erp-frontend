@@ -1,22 +1,15 @@
 import { saveOutline } from "ionicons/icons";
 import { IonIcon } from "@ionic/react";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
+import { useNavigate, useLocation } from "react-router-dom";
 import { IsParagraph } from "../../../../Library/Validations";
-import {
-	CustomError,
-	createValidationError
-} from "../../../../Library/Errores";
+import { createValidationError } from "../../../../Library/Errores";
+import { handleError } from "../../../../Library/Utils/errorHandler";
 import axios from "axios";
-import { useNavigate } from "react-router-dom";
 import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
+import { useAuth } from "../../../../Library/Context/AuthContext";
 
-
-type ErrorState = {
-	code: number;
-	message: string;
-	detail: string;
-};
 
 type Categoria = {
 	_id: string;
@@ -27,6 +20,13 @@ type Categoria = {
 
 export default function CrearProducto() {
 	const navigate = useNavigate();
+	const location = useLocation();
+	const { accessToken, isAuthenticated } = useAuth();
+
+	// Función helper para manejo de errores con contexto fijo
+	const handleErrorWithContext = useCallback((error: unknown) => {
+		handleError(error, navigate, location.pathname);
+	}, [navigate, location.pathname]);
 
 	const [productoName, setProducto] = useState("");
 	const [productoModelo, setModelo] = useState("");
@@ -38,40 +38,28 @@ export default function CrearProducto() {
     useEffect(() => {
         const fetchCategorias = async () => {
             try {
+                if (!isAuthenticated || !accessToken) {
+                    console.warn('Usuario no autenticado para cargar categorías');
+                    return;
+                }
+
                 const response = await axios.post(
-                    `${import.meta.env.VITE_API_URL}/categoria/todos`
+                    `${import.meta.env.VITE_API_URL}/categoria/todos`,
+                    {},
+                    {
+                        headers: {
+                            'Authorization': `Bearer ${accessToken}`,
+                            'Content-Type': 'application/json'
+                        }
+                    }
                 );
                 setCategorias(response.data.data);
             } catch (error) {
-                handleError(error, navigate);
+                handleErrorWithContext(error);
             }
         };
         fetchCategorias();
-    }, []);
-
-	function handleError(
-		error: unknown,
-		navigate: (path: string, options?: { state: ErrorState }) => void
-	) {
-		if (error instanceof CustomError) {
-			const errorData = error.toJSON();
-			navigate("/error", {
-			state: {
-				code: errorData.code,
-				message: errorData.message,
-				detail: errorData.details
-			}
-		});
-		} else if (error instanceof axios.AxiosError) {
-			navigate("/error", {
-			state: {
-				code: error.response?.status || 500,
-				message: error.message || "Network Error",
-				detail: error.response?.statusText || "Unknown error"
-			}
-			});
-		}
-	}
+    }, [handleErrorWithContext, isAuthenticated, accessToken]);
 
 	const validateField = (fieldValue: string, fieldName: string) => {
 		try {
@@ -82,7 +70,7 @@ export default function CrearProducto() {
 			);
 		}
 		} catch (error) {
-			handleError(error, navigate);
+			handleErrorWithContext(error);
 		}
 	};
 
@@ -114,6 +102,7 @@ export default function CrearProducto() {
 				datosEnviar,
 				{
 					headers: {
+						'Authorization': `Bearer ${accessToken}`,
 						"Content-Type": "application/json"
 					},
 					timeout: 3000 // timeout de 3 segundos
@@ -141,7 +130,7 @@ export default function CrearProducto() {
 				pauseOnHover: true,
 				draggable: true
 			});
-			handleError(error, navigate);
+			handleErrorWithContext(error);
 		}
 	};
 

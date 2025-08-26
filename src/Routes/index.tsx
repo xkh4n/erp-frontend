@@ -17,38 +17,123 @@ import CrearSolicitud from "../Views/Adquisiciones/Solicitud/Crear";
 import CrearCategoria from "../Views/Adquisiciones/Categorias/Nueva";
 import SolicitudView from "../Views/Adquisiciones/Solicitud/Validar";
 import AgregarProducto from "../Views/Adquisiciones/Productos/Agregar";
+import Asignar from "../Views/Adquisiciones/Asignacion/asignar";
+import ProtectedRoute from "../Components/ProtectedRoute";
+import LoginGuard from "../Components/LoginGuard";
 
 export default function index() {
     return (
-        <BrowserRouter>
+        <BrowserRouter
+            future={{
+                v7_startTransition: true,
+                v7_relativeSplatPath: true
+            }}
+        >
             <Routes>
                 <Route element={<MainLayout />}>
-                    <Route path="/" element={<Home />} />
-                    <Route path="/devolucion" element={<BajaProducto />} />
-                    <Route path="/contacto" element={<Contacto />} />
-                    <Route path="/registro" element={<Registro />} />
-                    <Route path="/asignarpantalla" element={<AsignarPantalla />} />
-                    <Route path="/crearpantalla" element={<CrearPantalla />} />
-                    <Route path="/crearproceso" element={<CrearProceso />} />
-                    <Route path="/crear_proveedor" element={<CrearProveedor />} />
-                    <Route path="/crear_producto" element={<CrearProducto />} />
-                    <Route path="/ingresos" element={<IngresoProducto />} />
-                    <Route path="/crear_solicitud" element={<CrearSolicitud />} />
-                    <Route path="/autorizar_solicitud" element={<SolicitudView />} />
-                    <Route path="/crear_categoria" element={<CrearCategoria />} />
-                    <Route path="/agregar_producto" element={<AgregarProducto />} />
+                    <Route path="/" element={
+                        <ProtectedRoute>
+                            <Home />
+                        </ProtectedRoute>
+                    } />
+                    <Route path="/devolucion" element={
+                        <ProtectedRoute>
+                            <BajaProducto />
+                        </ProtectedRoute>
+                    } />
+                    <Route path="/contacto" element={
+                        <ProtectedRoute>
+                            <Contacto />
+                        </ProtectedRoute>
+                    } />
+                    <Route path="/registro" element={
+                        <ProtectedRoute>
+                            <Registro />
+                        </ProtectedRoute>
+                    } />
+                    <Route path="/asignarpantalla" element={
+                        <ProtectedRoute>
+                            <AsignarPantalla />
+                        </ProtectedRoute>
+                    } />
+                    <Route path="/crearpantalla" element={
+                        <ProtectedRoute>
+                            <CrearPantalla />
+                        </ProtectedRoute>
+                    } />
+                    <Route path="/crearproceso" element={
+                        <ProtectedRoute>
+                            <CrearProceso />
+                        </ProtectedRoute>
+                    } />
+                    <Route path="/crear_proveedor" element={
+                        <ProtectedRoute>
+                            <CrearProveedor />
+                        </ProtectedRoute>
+                    } />
+                    <Route path="/crear_producto" element={
+                        <ProtectedRoute>
+                            <CrearProducto />
+                        </ProtectedRoute>
+                    } />
+                    <Route path="/ingresos" element={
+                        <ProtectedRoute>
+                            <IngresoProducto />
+                        </ProtectedRoute>
+                    } />
+                    <Route path="/asignacion" element={
+                        <ProtectedRoute>
+                            <Asignar />
+                        </ProtectedRoute>
+                    } />
+                    <Route path="/crear_solicitud" element={
+                        <ProtectedRoute>
+                            <CrearSolicitud />
+                        </ProtectedRoute>
+                    } />
+                    <Route path="/autorizar_solicitud" element={
+                        <ProtectedRoute>
+                            <SolicitudView />
+                        </ProtectedRoute>
+                    } />
+                    <Route path="/crear_categoria" element={
+                        <ProtectedRoute>
+                            <CrearCategoria />
+                        </ProtectedRoute>
+                    } />
+                    <Route path="/agregar_producto" element={
+                        <ProtectedRoute>
+                            <AgregarProducto />
+                        </ProtectedRoute>
+                    } />
+                    <Route path="/asignacion" element={
+                        <ProtectedRoute>
+                            <Asignar />
+                        </ProtectedRoute>
+                    } />
                 </Route>
                 <Route element={<LoginLayout />}>
-                    <Route path="/login" element={<Login />} />
+                    <Route path="/login" element={
+                        <LoginGuard>
+                            <Login />
+                        </LoginGuard>
+                    } />
                 </Route>
                 <Route path="/error" element={<ErrorPageWrapper />} />
+                <Route path="/unauthorized" element={
+                    <ErrorPage 
+                        code={403} 
+                        message="Acceso No Autorizado" 
+                        detail="No tienes permisos para acceder a esta página" 
+                    />
+                } />
             </Routes>
         </BrowserRouter>
     )
 }
 const ErrorPageWrapper = () => {
     const location = useLocation();
-    const { code, message, detail } = location.state || {};
+    const { code, message, detail, actionButton } = location.state || {};
   
-    return <ErrorPage code={code} message={message} detail={detail} />;
+    return <ErrorPage code={code} message={message} detail={detail} actionButton={actionButton} />;
 };

@@ -35,10 +35,13 @@ const IsUsername = (username: string) => {
 
 const IsPassword = (password:string) => {
     // Expresión regular para validar contraseñas
-    const regex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[.,;:!?'%$&#?¡@"()\[\]{}\-_*]).{8,}$/;
+    const regex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[.,;:!?'%$&#?¡@"()[\]{}_*-]).{8,}$/;
     // Verificar si el valor no es una cadena o no cumple con la expresión regular
     if (typeof password !== 'string' || !regex.test(password)) {
-      console.warn("The input is not a valid password");
+      // Solo logear en desarrollo para evitar ruido en producción
+      if (import.meta.env.DEV) {
+        console.warn("The input is not a valid password");
+      }
       return false;
     }
     return true;
@@ -74,7 +77,7 @@ const IsParagraph = (paragraph: string) => {
   // Eliminar espacios en blanco al inicio y al final
   paragraph = paragraph.trim();
   // Expresión regular mejorada para validar párrafos
-  const regex = /^[a-zA-Z0-9\s.,;:!?'"()\[\]{}\-_*\/&@#%^~|\\+=™°®©]{1,}$/;  
+  const regex = /^[a-zA-Z0-9\s.,;:!?'"()[\]{}_*&@#%^~|\\+=™°®©/-]{1,}$/;  
   // Verificar si el valor no cumple con la expresión regular
   if (!regex.test(paragraph)) {
       console.warn(`The input "${paragraph}" is not a valid paragraph`);
@@ -83,11 +86,16 @@ const IsParagraph = (paragraph: string) => {
   return true;
 };
 
-const IsDecimal = (decimal:number) => {
-    // Expresión regular para validar números decimales
-    const regex = /^-?\d+(,\d+)?$/;
-    // Verificar si el valor no es una cadena o no cumple con la expresión regular
-    if (typeof decimal !== 'string' || !regex.test(decimal)) {
+const IsDecimal = (decimal: string) => {
+    // Verificar si el valor no es una cadena
+    if (typeof decimal !== 'string') {
+        console.warn("The input is not a string");
+        return false;
+    }
+    // Expresión regular para validar números decimales (punto o coma como separador)
+    const regex = /^-?\d+([.,]\d+)?$/;
+    // Verificar si el valor no cumple con la expresión regular
+    if (!regex.test(decimal)) {
         console.warn("The input is not a valid decimal number");
         return false;
     }
@@ -112,7 +120,7 @@ const IsPhone = (phone:string) => {
     return true;
 }
 
-const IsBoolean = (value: any): boolean => {
+const IsBoolean = (value: unknown): boolean => {
     // Si es un booleano nativo
     if (typeof value === 'boolean') {
         return true;
@@ -139,7 +147,8 @@ const IsName = (name: string) => {
     }
     // Eliminar espacios en blanco al inicio y al final
     name = name.trim();
-    const regex = /^[a-zA-ZÁÉÍÓÚáéíóúñÑ0-9(),.\-]+( [a-zA-ZÁÉÍÓÚáéíóúñÑ0-9(),.\-]+)*$/;
+    // Regex para validar nombres: letras, espacios, guiones y tildes
+    const regex = /^[a-zA-ZÁÉÍÓÚáéíóúñÑ0-9(),.:-]+( [a-zA-ZÁÉÍÓÚáéíóúñÑ0-9(),.:-]+)*$/;
     // Verificar si el valor no cumple con la expresión regular
     if (!regex.test(name)) {
         console.error(`The input "${name}" is not a valid name`);

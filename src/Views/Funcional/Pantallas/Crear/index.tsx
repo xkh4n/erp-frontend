@@ -8,6 +8,7 @@ import { CustomError, createValidationError } from '../../../../Library/Errores'
 import { useNavigate } from 'react-router-dom';
 import Checked from "../../../../Components/Checked";
 import { IsName } from "../../../../Library/Validations";
+import { useAuth } from "../../../../Library/Context/AuthContext";
 
 
 
@@ -27,6 +28,7 @@ type Respuesta = {
 
 export default function CrearPantalla() {
     const navigate = useNavigate();
+    const { accessToken, isAuthenticated } = useAuth();
 
     
 
@@ -70,7 +72,7 @@ export default function CrearPantalla() {
                 }
             });
         }
-    }, [navigate]);
+    }, []);
 
     // Funciones de fetch para cargar los select
     // Estas funciones se encargan de hacer las peticiones a la API y actualizar los estados correspondientes
@@ -80,45 +82,72 @@ export default function CrearPantalla() {
     // Funcion para cargar los datos de las gerencias
     const fetchGerencias = useCallback(async () => {
         try {
-            const response = await axios.post(`${import.meta.env.VITE_API_URL}/gerencia/todas`, {
-                headers: { 'Content-Type': 'application/json' },
+            if (!isAuthenticated || !accessToken) {
+                console.warn('Usuario no autenticado para cargar gerencias');
+                return;
+            }
+
+            const response = await axios.post(`${import.meta.env.VITE_API_URL}/gerencia/todas`, {}, {
+                headers: { 
+                    'Authorization': `Bearer ${accessToken}`,
+                    'Content-Type': 'application/json' 
+                },
                 timeout: 3000
             });
             setGerencias(response.data.data);
         } catch (error) {
             handleError(error, navigate);
         }
-    }, [handleError, navigate]);
+    }, [handleError, navigate, isAuthenticated, accessToken]);
 
     // Funcion para cargar las subgerencias por ID de gerencia
     const fetchSubgerencias = useCallback(async (gerenciaId: string) => {
         try {
+            if (!isAuthenticated || !accessToken) {
+                console.warn('Usuario no autenticado para cargar subgerencias');
+                return;
+            }
+
             const response = await axios.post(`${import.meta.env.VITE_API_URL}/subgerencia/poridgerencia`, {
                 gerencia: gerenciaId
             }, {
-                headers: { 'Content-Type': 'application/json' },
+                headers: { 
+                    'Authorization': `Bearer ${accessToken}`,
+                    'Content-Type': 'application/json' 
+                },
                 timeout: 3000
             });
             setSubgerencias(response.data.data);
         } catch (error) {
             handleError(error, navigate);
         }
-    }, [handleError, navigate]);
+    }, [handleError, navigate, isAuthenticated, accessToken]);
 
     // Funcion para cargar los departamentos por ID de subgerencia o todos si no se selecciona subgerencia
     const fetchDepartamentos = useCallback(async (subgerenciaId?: string) => {
         try {
+            if (!isAuthenticated || !accessToken) {
+                console.warn('Usuario no autenticado para cargar departamentos');
+                return;
+            }
+
             if (subgerenciaChecked && subgerenciaId) {
                 const response = await axios.post(`${import.meta.env.VITE_API_URL}/depto/getbyidsubgerencia`, {
                     id: subgerenciaId
                 }, {
-                    headers: { 'Content-Type': 'application/json' },
+                    headers: { 
+                        'Authorization': `Bearer ${accessToken}`,
+                        'Content-Type': 'application/json' 
+                    },
                     timeout: 3000
                 });
                 setDepartamentos(response.data.data);
             } else if (!subgerenciaChecked && departamentoChecked) {
                 const response = await axios.post(`${import.meta.env.VITE_API_URL}/depto/todos`, {}, {
-                    headers: { 'Content-Type': 'application/json' },
+                    headers: { 
+                        'Authorization': `Bearer ${accessToken}`,
+                        'Content-Type': 'application/json' 
+                    },
                     timeout: 3000
                 });
                 setDepartamentos(response.data.data);
@@ -128,14 +157,22 @@ export default function CrearPantalla() {
         } catch (error) {
             handleError(error, navigate);
         }
-    }, [subgerenciaChecked, departamentoChecked, handleError, navigate]);
+    }, [subgerenciaChecked, departamentoChecked, handleError, navigate, accessToken, isAuthenticated]);
 
     // Funcion para cargar los servicios por ID de departamento o todos si no se selecciona departamento
     const fetchServicios = useCallback(async () => {
         try {
+            if (!isAuthenticated || !accessToken) {
+                console.warn('Usuario no autenticado para cargar servicios');
+                return;
+            }
+
             if (servicioChecked && !departamentoChecked) {
                 const response = await axios.post(`${import.meta.env.VITE_API_URL}/servicios/todos`, {}, {
-                    headers: { 'Content-Type': 'application/json' },
+                    headers: { 
+                        'Authorization': `Bearer ${accessToken}`,
+                        'Content-Type': 'application/json' 
+                    },
                     timeout: 3000
                 });
                 setServicios(response.data.data);
@@ -143,7 +180,10 @@ export default function CrearPantalla() {
                 const response = await axios.post(`${import.meta.env.VITE_API_URL}/servicios/getbydeptocodigo`, {
                     departamento: parseInt(selectedDepartamento)
                 }, {
-                    headers: { 'Content-Type': 'application/json' },
+                    headers: { 
+                        'Authorization': `Bearer ${accessToken}`,
+                        'Content-Type': 'application/json' 
+                    },
                     timeout: 3000
                 });
                 setServicios(response.data.data);
@@ -153,16 +193,24 @@ export default function CrearPantalla() {
         } catch (error) {
             handleError(error, navigate);
         }
-    }, [servicioChecked, departamentoChecked, selectedDepartamento, handleError, navigate]);
+    }, [servicioChecked, departamentoChecked, selectedDepartamento, handleError, navigate, accessToken, isAuthenticated]);
 
     // Funcion para cargar los procesos por ID de servicio
     const fechProcesos = useCallback(async () => {
         try {
+            if (!isAuthenticated || !accessToken) {
+                console.warn('Usuario no autenticado para cargar procesos');
+                return;
+            }
+
             if (selectedServicio) {
                 const response = await axios.post(`${import.meta.env.VITE_API_URL}/procesos/getbyservicio`, {
                     servicio: parseInt(selectedServicio)
                 }, {
-                    headers: { 'Content-Type': 'application/json' },
+                    headers: { 
+                        'Authorization': `Bearer ${accessToken}`,
+                        'Content-Type': 'application/json' 
+                    },
                     timeout: 3000
                 });
                 setProcesos(response.data.data);
@@ -172,7 +220,7 @@ export default function CrearPantalla() {
         } catch (error) {
             handleError(error, navigate);
         }
-    }, [selectedServicio, handleError, navigate]);
+    }, [selectedServicio, handleError, navigate, accessToken, isAuthenticated]);
 
     // useEffect para cargar gerencias al inicio
     useEffect(() => {
@@ -247,9 +295,13 @@ export default function CrearPantalla() {
             };
             console.warn("Datos a enviar: ", datosEnviar);
             // Enviar datos al backend
+            if (!isAuthenticated || !accessToken) {
+                throw createValidationError("Usuario no autenticado. Por favor, inicie sesión nuevamente.");
+            }
             
             await axios.put(`${import.meta.env.VITE_API_URL}/vista/nueva`, datosEnviar, {
                 headers: {
+                    'Authorization': `Bearer ${accessToken}`,
                     'Content-Type': 'application/json'
                 },
                 timeout: 3000 // timeout de 3 segundos

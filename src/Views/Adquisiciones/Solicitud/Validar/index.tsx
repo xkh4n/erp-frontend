@@ -4,6 +4,7 @@ import { trashOutline, checkmarkCircle, createOutline } from "ionicons/icons";
 import { IonIcon } from "@ionic/react";
 import SolicitudDetalle from '../../../../Components/SolicitudDetalle/SolicitudDetalle';
 import { Toast, showApprovalToast, showRejectionToast, showErrorToast, showInfoToast } from '../../../../Components/Toast';
+import { useAuth } from '../../../../Library/Context/AuthContext';
 
 interface DetalleItem {
     _id?: string;
@@ -66,6 +67,7 @@ interface Solicitud {
     detalles?: DetalleItem[];
 }
 export default function SolicitudView() {
+    const { accessToken, isAuthenticated } = useAuth();
     const [solicitudes, setSolicitudes] = useState<Solicitud[]>([]);
     const [loading, setLoading] = useState(true);
     const [selectedSolicitud, setSelectedSolicitud] = useState<Solicitud | null>(null);
@@ -76,16 +78,56 @@ export default function SolicitudView() {
         const fetchSolicitudes = async () => {
             try {
                 setLoading(true);
-                const response = await axios.post(`${import.meta.env.VITE_API_URL}/solicitud/solicitudes`);
+                
+                if (!isAuthenticated || !accessToken) {
+                    showErrorToast("Usuario no autenticado. Por favor, inicie sesión");
+                    return;
+                }
+                
+                const response = await axios.post(`${import.meta.env.VITE_API_URL}/solicitud/solicitudes`, {}, {
+                    headers: {
+                        'Authorization': `Bearer ${accessToken}`,
+                        'Content-Type': 'application/json'
+                    }
+                });
                 setSolicitudes(response.data.data);
-            } catch (error) {
-                showErrorToast(`Error fetching solicitudes: ${error}`);
+            } catch (error: unknown) {
+                console.error('Error fetching solicitudes:', error);
+                
+                // Type guard para errores de Axios
+                interface AxiosErrorResponse {
+                    response?: {
+                        status?: number;
+                    };
+                    code?: string;
+                }
+                
+                const isAxiosError = (err: unknown): err is AxiosErrorResponse => {
+                    return typeof err === 'object' && err !== null && ('response' in err || 'code' in err);
+                };
+                
+                // Manejar diferentes tipos de errores de manera más amigable
+                if (isAxiosError(error)) {
+                    if (error.response?.status === 404) {
+                        showErrorToast("No se encontraron solicitudes");
+                    } else if (error.response?.status === 401) {
+                        showErrorToast("No tiene permisos para ver las solicitudes");
+                    } else if (error.response?.status === 500) {
+                        showErrorToast("Error interno del servidor. Intente nuevamente");
+                    } else if (error.code === 'NETWORK_ERROR') {
+                        showErrorToast("Error de conexión. Verifique su conexión a internet");
+                    } else {
+                        showErrorToast("Error al cargar las solicitudes. Intente nuevamente");
+                    }
+                } else {
+                    showErrorToast("Error al cargar las solicitudes. Intente nuevamente");
+                }
             } finally {
                 setLoading(false);
             }
         };
         fetchSolicitudes();
-    }, []);
+    }, [accessToken, isAuthenticated]);
 
     const handleVerDetalle = async (solicitud: Solicitud) => {
         try {
@@ -96,6 +138,11 @@ export default function SolicitudView() {
             // Hacer llamada al endpoint para obtener los detalles
             const response = await axios.post(`${import.meta.env.VITE_API_URL}/solicitud/detalle`, {
                 id: solicitud._id || solicitud.id
+            }, {
+                headers: {
+                    'Authorization': `Bearer ${accessToken}`,
+                    'Content-Type': 'application/json'
+                }
             });
             
             // Actualizar la solicitud seleccionada con los detalles obtenidos
@@ -123,6 +170,11 @@ export default function SolicitudView() {
             // Aprobar toda la solicitud y todos sus productos
             const response = await axios.patch(`${import.meta.env.VITE_API_URL}/solicitud/aprobar`, {
                 id: solicitud._id || solicitud.id
+            }, {
+                headers: {
+                    'Authorization': `Bearer ${accessToken}`,
+                    'Content-Type': 'application/json'
+                }
             });
             
             if (response.data.codigo === 200) {
@@ -152,6 +204,11 @@ export default function SolicitudView() {
             // Rechazar toda la solicitud y todos sus productos
             const response = await axios.patch(`${import.meta.env.VITE_API_URL}/solicitud/rechazar`, {
                 id: solicitud._id || solicitud.id
+            }, {
+                headers: {
+                    'Authorization': `Bearer ${accessToken}`,
+                    'Content-Type': 'application/json'
+                }
             });
             
             if (response.data.codigo === 200) {
@@ -178,6 +235,7 @@ export default function SolicitudView() {
                 id: itemId
             },{
                 headers: {
+                    'Authorization': `Bearer ${accessToken}`,
                     'Content-Type': 'application/json'
                 }
             });
@@ -230,6 +288,7 @@ export default function SolicitudView() {
                 id: itemId
             },{
                 headers: {
+                    'Authorization': `Bearer ${accessToken}`,
                     'Content-Type': 'application/json'
                 }
             });
