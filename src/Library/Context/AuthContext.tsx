@@ -99,7 +99,6 @@ interface AuthProviderProps {
 
 export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     const [state, dispatch] = useReducer(authReducer, initialState);
-
     // Función para refrescar token
     const refreshAccessToken = useCallback(async (): Promise<boolean> => {
         try {
