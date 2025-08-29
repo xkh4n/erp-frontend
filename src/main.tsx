@@ -10,8 +10,8 @@ if (import.meta.env.VITE_APP_TITLE) {
   document.title = import.meta.env.VITE_APP_TITLE;
 }
 
-// Registrar Service Worker para PWA solo en producción
-if ('serviceWorker' in navigator && import.meta.env.PROD) {
+// Registrar Service Worker para PWA solo en producción (deshabilitado temporalmente por SSL)
+if ('serviceWorker' in navigator && import.meta.env.PROD && import.meta.env.VITE_ENABLE_HTTPS === 'true') {
   window.addEventListener('load', () => {
     navigator.serviceWorker.register('/sw.js')
       .then((registration) => {

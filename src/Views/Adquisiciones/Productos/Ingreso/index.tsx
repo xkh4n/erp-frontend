@@ -6,7 +6,6 @@ import axios from "axios";
 import { handleError } from "../../../../Library/Utils/errorHandler";
 import { useAuth } from "../../../../Library/Context/AuthContext";
 
-
 type CentroCosto = {
     _id: string;
     codigo: string;
@@ -14,7 +13,7 @@ type CentroCosto = {
     descripcion: string;
     fechaCreacion: string;
     fechaModificacion: string;
-}
+};
 
 type Solicitud = {
     _id: string;
@@ -32,7 +31,7 @@ type Solicitud = {
     fechaRequerida?: string;
     centroCosto?: string | CentroCosto;
     observaciones?: string;
-}
+};
 
 type DetalleSolicitud = {
     nroSolicitud: string;
@@ -46,7 +45,7 @@ type DetalleSolicitud = {
         codigoInventario: string;
         fechaRecepcion: string;
     }>;
-}
+};
 
 type DetalleSolicitudBackend = {
     nroSolicitud: string;
@@ -60,7 +59,7 @@ type DetalleSolicitudBackend = {
         codigoInventario: string;
         fechaRecepcion: string;
     }>;
-}
+};
 
 type DetalleRecepcion = {
     productoId: string;
@@ -68,7 +67,7 @@ type DetalleRecepcion = {
     numeroSerie: string;
     numeroDocumento: string | number;
     fechaRecepcion: string;
-}
+};
 
 type Proveedor = {
     _id: string;
@@ -76,7 +75,7 @@ type Proveedor = {
     rut: string;
     email?: string;
     telefono?: string;
-}
+};
 
 export default function IngresoProducto() {
     const navigate = useNavigate();
@@ -111,9 +110,7 @@ export default function IngresoProducto() {
     // Estados mínimos para mantener funcionalidad
     const [selectedSolicitud, setSelectedSolicitud] = useState("");
     const [centroCostoID, setCentroCostoID] = useState("");
-    /*
-    const [guardaSolicitud, setGuardaSolicitud] = useState(false);
-*/
+
     // Funcion para guardar producto
     const handlerGuardarProducto = async () => {
         const centroCosto = centroCostoID;
@@ -220,6 +217,7 @@ export default function IngresoProducto() {
             }
         }
     };
+    
     // Función separada para recargar solicitudes
     const recargarSolicitudes = useCallback(async () => {
         try {
@@ -449,6 +447,7 @@ export default function IngresoProducto() {
         };
         fetchCentroCosto();
     }, [selectedSolicitud, solicitud, isAuthenticated, accessToken]);
+    
     // Función para manejar el cambio de solicitud
     const handleSolicitudChange = async (solicitudId: string) => {
         setSelectedSolicitud(solicitudId);
@@ -544,6 +543,7 @@ export default function IngresoProducto() {
         setTipoDocumento("");
         setNumeroDocumento("");
     };
+    
     const handleAceptarRecepcion = async () => {
 
         if (!selectedProveedor) {
@@ -643,464 +643,467 @@ export default function IngresoProducto() {
 
     return (
         <div className="flex flex-col items-center justify-center h-max bg-gray-200 p-4 md:p-5 lg:p-6">
-        <ToastContainer aria-label="Notificaciones de la aplicación" />
-        <div className="w-full max-w-[95%] mx-auto px-4 sm:px-6 lg:px-8">
-            <h1 className="text-xl md:text-2xl lg:text-3xl font-bold mb-6 text-center text-gray-800">
-                Ingreso de Producto
-            </h1>
-            <form className="w-full">
-            <div className="grid grid-cols-1 max-[799px]:grid-cols-1 min-[800px]:grid-cols-6 min-[1000px]:grid-cols-8 min-[1200px]:grid-cols-10 min-[1400px]:grid-cols-12 gap-4">
-                <div className="w-full max-[799px]:w-full min-[800px]:col-span-2 min-[1000px]:col-span-1 min-[1200px]:col-span-2 min-[1400px]:col-span-2">
-                    <label
-                        className="block text-gray-700 text-sm font-medium mb-2"
-                        htmlFor="cbo_solicitud"
-                    >
-                        Solicitud
-                    </label>
-                    <select
-                        id="cbo_solicitud"
-                        name="cbo_solicitud"
-                        value={selectedSolicitud}
-                        onChange={(e) => handleSolicitudChange(e.target.value)}
-                        className="w-full border rounded px-3 py-2"
-                        required
-                    >
-                        <option value="">Seleccione la Solicitud</option>
-                        {solicitud.map((solicitudes) => (
-                        <option key={solicitudes._id} value={solicitudes._id}>
-                            {solicitudes.nroSolicitud}
-                        </option>
-                        ))}
-                    </select>
-                </div>
-                <div className="w-full max-[799px]:w-full min-[800px]:col-span-2 min-[1000px]:col-span-1 min-[1200px]:col-span-2 min-[1400px]:col-span-10">
-                    <label
-                        className="block text-gray-700 text-sm font-medium mb-2"
-                        htmlFor="desc_solicitud"
-                    >
-                        Observaciones de la Solicitud
-                    </label>
-                    <input
-                        id="desc_solicitud"
-                        type="text"
-                        name="desc_solicitud"
-                        value={getSelectedSolicitudObservaciones()}
-                        readOnly
-                        className="w-full px-3 py-2 md:px-4 md:py-2 rounded-lg border border-gray-300 shadow-sm bg-gray-50"
-                        placeholder="Observaciones de la solicitud seleccionada"
-                    />
-                </div> 
-
-            </div>
-            
-            {/* Información de la solicitud seleccionada */}
-            {selectedSolicitud && (
-                <div className="mt-6">
-                    <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
-                        <h3 className="text-lg font-semibold text-blue-800 mb-3">Información de la Solicitud</h3>
-                        {(() => {
-                            const solicitudSeleccionada = solicitud.find(s => s._id === selectedSolicitud);
-                            return solicitudSeleccionada ? (
-                                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 text-sm">
-                                    <div>
-                                        <span className="font-medium text-blue-700">Solicitante:</span>
-                                        <p className="text-blue-800">{solicitudSeleccionada.solicitante}</p>
-                                    </div>
-                                    <div>
-                                        <span className="font-medium text-blue-700">Cargo:</span>
-                                        <p className="text-blue-800">{solicitudSeleccionada.cargoSolicitante}</p>
-                                    </div>
-                                    <div>
-                                        <span className="font-medium text-blue-700">Beneficiario:</span>
-                                        <p className="text-blue-800">{solicitudSeleccionada.beneficiario}</p>
-                                    </div>
-                                    <div>
-                                        <span className="font-medium text-blue-700">Email:</span>
-                                        <p className="text-blue-800">{solicitudSeleccionada.emailSolicitante}</p>
-                                    </div>
-                                    <div>
-                                        <span className="font-medium text-blue-700">Teléfono:</span>
-                                        <p className="text-blue-800">{solicitudSeleccionada.telefonoSolicitante}</p>
-                                    </div>
-                                    <div>
-                                        <span className="font-medium text-blue-700">Prioridad:</span>
-                                        <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ml-2 ${
-                                            solicitudSeleccionada.prioridad === 'urgente' ? 'bg-red-100 text-red-800' :
-                                            solicitudSeleccionada.prioridad === 'alta' ? 'bg-orange-100 text-orange-800' :
-                                            solicitudSeleccionada.prioridad === 'media' ? 'bg-yellow-100 text-yellow-800' :
-                                            'bg-green-100 text-green-800'
-                                        }`}>
-                                            {solicitudSeleccionada.prioridad}
-                                        </span>
-                                    </div>
-                                    {solicitudSeleccionada.fechaRequerida && (
-                                        <div>
-                                            <span className="font-medium text-blue-700">Fecha Requerida:</span>
-                                            <p className="text-blue-800">{new Date(solicitudSeleccionada.fechaRequerida).toLocaleDateString()}</p>
-                                        </div>
-                                    )}
-                                    {solicitudSeleccionada.centroCosto && (
-                                        <div>
-                                            <span className="font-medium text-blue-700">Centro de Costo:</span>
-                                            <p className="text-blue-800">
-                                                {typeof solicitudSeleccionada.centroCosto === 'object' 
-                                                    ? solicitudSeleccionada.centroCosto.nombre || solicitudSeleccionada.centroCosto.codigo || 'N/A'
-                                                    : solicitudSeleccionada.centroCosto}
-                                            </p>
-                                        </div>
-                                    )}
-                                    <div>
-                                        <span className="font-medium text-blue-700">Estado:</span>
-                                        <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ml-2 ${
-                                            solicitudSeleccionada.estado === 'aprobado' ? 'bg-green-100 text-green-800' :
-                                            solicitudSeleccionada.estado === 'pendiente' ? 'bg-yellow-100 text-yellow-800' :
-                                            solicitudSeleccionada.estado === 'rechazado' ? 'bg-red-100 text-red-800' :
-                                            'bg-gray-100 text-gray-800'
-                                        }`}>
-                                            {solicitudSeleccionada.estado}
-                                        </span>
-                                    </div>
-                                </div>
-                            ) : null;
-                        })()}
-                    </div>
-                </div>
-            )}
-            
-            {/* Tabla de detalle de la solicitud */}
-            {selectedSolicitud && detalleSolicitud.length > 0 && (
-                <div className="mt-6">
-                    <h3 className="text-lg font-semibold text-gray-800 mb-4">Detalle de la Solicitud - Recepción de Productos</h3>
-                    <div className="overflow-x-auto bg-white rounded-lg shadow">
-                        <table className="min-w-full divide-y divide-gray-200">
-                            <thead className="bg-gray-50">
-                                <tr>
-                                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                        Nro. Solicitud
-                                    </th>
-                                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                        Fecha Recepción
-                                    </th>
-                                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                        Producto
-                                    </th>
-                                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                        Cantidad Total
-                                    </th>
-                                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                        Recibida
-                                    </th>
-                                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                        Pendiente
-                                    </th>
-                                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                        Estado
-                                    </th>
-                                </tr>
-                            </thead>
-                            <tbody className="bg-white divide-y divide-gray-200">
-                                {detalleSolicitud.map((detalle, index) => {
-                                    const cantidadPendiente = detalle.cantidadPendiente || (detalle.cantidad - (detalle.cantidadRecibida || 0));
-                                    const cantidadRecibida = detalle.cantidadRecibida || 0;
-                                    const estaCompleto = cantidadPendiente === 0;
-                                    return (
-                                        <tr key={`${detalle.productoId}-${index}`} className={index % 2 === 0 ? 'bg-white' : 'bg-gray-50'}>
-                                            <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
-                                                {detalle.nroSolicitud}
-                                            </td>
-                                            <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                                                {new Date().toLocaleDateString()}
-                                            </td>
-                                            <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                                                {detalle.producto}
-                                                <div className="text-xs text-gray-400">ID: {detalle.productoId}</div>
-                                            </td>
-                                            <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                                                {detalle.cantidad}
-                                            </td>
-                                            <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                                                <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
-                                                    cantidadRecibida > 0 ? 'bg-blue-100 text-blue-800' : 'bg-gray-100 text-gray-800'
-                                                }`}>
-                                                    {cantidadRecibida}
-                                                </span>
-                                            </td>
-                                            <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                                                <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
-                                                    cantidadPendiente > 0 ? 'bg-yellow-100 text-yellow-800' : 'bg-green-100 text-green-800'
-                                                }`}>
-                                                    {cantidadPendiente}
-                                                </span>
-                                            </td>
-                                            <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                                                {estaCompleto ? (
-                                                    <span className="inline-flex items-center px-3 py-2 rounded-full text-sm font-medium bg-green-100 text-green-800">
-                                                        ✓ RECIBIDO
-                                                    </span>
-                                                ) : (
-                                                    <button
-                                                        type="button"
-                                                        onClick={(e) => {
-                                                            e.preventDefault();
-                                                            e.stopPropagation();
-                                                            handleRecibirClick(detalle);
-                                                        }}
-                                                        className="bg-green-600 hover:bg-green-700 text-white font-bold py-2 px-4 rounded transition duration-200"
-                                                    >
-                                                        Recibir ({cantidadPendiente})
-                                                    </button>
-                                                )}
-                                            </td>
-                                        </tr>
-                                    );
-                                })}
-                            </tbody>
-                        </table>
-                    </div>
-                </div>
-            )}
-
-            {/* Resumen de recepciones */}
-            {detalleRecepciones.length > 0 && (
-                <div className="mt-6">
-                    <h3 className="text-lg font-semibold text-gray-800 mb-4">Resumen de Recepciones</h3>
-                    <div className="overflow-x-auto bg-white rounded-lg shadow">
-                        <table className="min-w-full divide-y divide-gray-200">
-                            <thead className="bg-gray-50">
-                                <tr>
-                                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                        Producto
-                                    </th>
-                                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                        Número de Serie
-                                    </th>
-                                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                        Código de Inventario
-                                    </th>
-                                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                        Fecha de Recepción
-                                    </th>
-                                </tr>
-                            </thead>
-                            <tbody className="bg-white divide-y divide-gray-200">
-                                {detalleRecepciones.map((recepcion, index) => (
-                                    <tr key={index} className={index % 2 === 0 ? 'bg-white' : 'bg-gray-50'}>
-                                        <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
-                                            {recepcion.producto}
-                                        </td>
-                                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                                            {recepcion.numeroSerie}
-                                        </td>
-                                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                                            {recepcion.numeroDocumento}
-                                        </td>
-                                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                                            {new Date(recepcion.fechaRecepcion).toLocaleString()}
-                                        </td>
-                                    </tr>
+            <ToastContainer aria-label="Notificaciones de la aplicación" />
+            <div className="w-full max-w-[95%] mx-auto px-4 sm:px-6 lg:px-8">
+                <h1 className="text-xl md:text-2xl lg:text-3xl font-bold mb-6 text-center text-gray-800">
+                    Ingreso de Producto
+                </h1>
+                <form className="w-full overflow-y-auto mb-20">
+                    <div className="grid grid-cols-1 max-[799px]:grid-cols-1 min-[800px]:grid-cols-6 min-[1000px]:grid-cols-8 min-[1200px]:grid-cols-10 min-[1400px]:grid-cols-12 gap-4">
+                        <div className="w-full max-[799px]:w-full min-[800px]:col-span-2 min-[1000px]:col-span-1 min-[1200px]:col-span-2 min-[1400px]:col-span-2">
+                            <label
+                                className="block text-gray-700 text-sm font-medium mb-2"
+                                htmlFor="cbo_solicitud"
+                            >
+                                Solicitud
+                            </label>
+                            <select
+                                id="cbo_solicitud"
+                                name="cbo_solicitud"
+                                value={selectedSolicitud}
+                                onChange={(e) => handleSolicitudChange(e.target.value)}
+                                className="w-full border rounded px-3 py-2"
+                                required
+                            >
+                                <option value="">Seleccione la Solicitud</option>
+                                {solicitud.map((solicitudes) => (
+                                    <option key={solicitudes._id} value={solicitudes._id}>
+                                        {solicitudes.nroSolicitud}
+                                    </option>
                                 ))}
-                            </tbody>
-                        </table>
-                    </div>
-                </div>
-            )}
-
-            {/* Popup para recepción de productos */}
-            {showPopup && selectedProductoRecepcion && (
-                <div className="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full z-50">
-                    <div className="relative top-10 mx-auto p-5 border max-w-4xl w-[95%] shadow-lg rounded-md bg-white">
-                        <div className="mt-3">
-                            <h3 className="text-lg leading-6 font-medium text-gray-900 text-center mb-4">Recepción de Producto</h3>
-                            
-                            {/* Información del producto */}
-                            <div className="mb-6 p-4 bg-gray-50 rounded-lg">
-                                <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-sm">
-                                    <div>
-                                        <span className="font-medium text-gray-700">Producto:</span>
-                                        <p className="text-gray-900">{selectedProductoRecepcion.producto}</p>
-                                    </div>
-                                    <div>
-                                        <span className="font-medium text-gray-700">Cantidad Total:</span>
-                                        <p className="text-gray-900">{selectedProductoRecepcion.cantidad}</p>
-                                    </div>
-                                    <div>
-                                        <span className="font-medium text-gray-700">Pendiente por Recibir:</span>
-                                        <span className="ml-1 inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-yellow-100 text-yellow-800">
-                                            {getCantidadPendiente(selectedProductoRecepcion.productoId)}
-                                        </span>
-                                    </div>
-                                </div>
-                            </div>
-
-                            {/* Mostrar recepciones anteriores si existen */}
-                            {(() => {
-                                const recepcionesProducto = detalleRecepciones.filter(r => r.productoId === selectedProductoRecepcion.productoId);
-                                return recepcionesProducto.length > 0 && (
-                                    <div className="mb-6 p-4 bg-blue-50 rounded-lg">
-                                        <p className="text-sm font-medium text-blue-700 mb-3">Recepciones Realizadas ({recepcionesProducto.length}):</p>
-                                        <div className="overflow-x-auto">
-                                            <table className="min-w-full text-xs">
-                                                <thead>
-                                                    <tr className="bg-blue-100">
-                                                        <th className="px-2 py-1 text-left font-medium text-blue-700">Serie</th>
-                                                        <th className="px-2 py-1 text-left font-medium text-blue-700">Documento</th>
-                                                        <th className="px-2 py-1 text-left font-medium text-blue-700">Fecha</th>
-                                                    </tr>
-                                                </thead>
-                                                <tbody>
-                                                    {recepcionesProducto.map((recepcion, index) => (
-                                                        <tr key={index} className={index % 2 === 0 ? 'bg-white' : 'bg-blue-25'}>
-                                                            <td className="px-2 py-1 text-blue-600">{recepcion.numeroSerie}</td>
-                                                            <td className="px-2 py-1 text-blue-600">{recepcion.numeroDocumento}</td>
-                                                            <td className="px-2 py-1 text-blue-600">{new Date(recepcion.fechaRecepcion).toLocaleDateString()}</td>
-                                                        </tr>
-                                                    ))}
-                                                </tbody>
-                                            </table>
-                                        </div>
-                                    </div>
-                                );
-                            })()}
-
-                            {/* Formulario de campos en grilla responsive */}
-                            <div className="grid grid-cols-1 max-[799px]:grid-cols-1 min-[1000px]:grid-cols-8 min-[1200px]:grid-cols-10 min-[1400px]:grid-cols-12 gap-4">
-                                {/* Primera fila: Proveedor, Tipo Documento, Número Documento */}
-                                <div className="w-full max-[799px]:w-full min-[800px]:col-span-2 min-[1000px]:col-span-3 min-[1200px]:col-span-4 min-[1400px]:col-span-4">
-                                    <label className="block text-gray-700 text-sm font-medium mb-2" htmlFor="proveedor">
-                                        Proveedor *
-                                    </label>
-                                    <select
-                                        id="proveedor"
-                                        value={selectedProveedor}
-                                        onChange={(e) => setSelectedProveedor(e.target.value)}
-                                        className="w-full px-3 py-2 md:px-4 md:py-2 rounded-lg border border-gray-300 shadow-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                                        required
-                                    >
-                                        <option value="">Seleccione un proveedor</option>
-                                        {proveedores.map((proveedor) => (
-                                            <option key={proveedor._id} value={proveedor._id}>
-                                                {proveedor.razonSocial}
-                                            </option>
-                                        ))}
-                                    </select>
-                                </div>
-                                <div className="w-full max-[799px]:w-full min-[800px]:col-span-2 min-[1000px]:col-span-2 min-[1200px]:col-span-3 min-[1400px]:col-span-5">
-                                    <label className="block text-gray-700 text-sm font-medium mb-2" htmlFor="tipoDocumento">
-                                        Tipo de Documento *
-                                    </label>
-                                    <select
-                                        id="tipoDocumento"
-                                        value={tipoDocumento}
-                                        onChange={(e) => setTipoDocumento(e.target.value)}
-                                        disabled={!selectedProveedor}
-                                        className={`w-full px-3 py-2 md:px-4 md:py-2 rounded-lg border border-gray-300 shadow-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 ${!selectedProveedor ? 'bg-gray-100 cursor-not-allowed' : ''}`}
-                                        required
-                                    >
-                                        <option value="">Seleccione tipo</option>
-                                        <option value="GUIA DESPACHO">GUIA DESPACHO</option>
-                                        <option value="FACTURA">FACTURA</option>
-                                        <option value="ORDEN DE RETIRO">ORDEN DE RETIRO</option>
-                                        <option value="ORDEN DE TRANSPORTE">ORDEN DE TRANSPORTE</option>
-                                    </select>
-                                </div>
-                                <div className="w-full max-[799px]:w-full min-[800px]:col-span-2 min-[1000px]:col-span-3 min-[1200px]:col-span-3 min-[1400px]:col-span-3">
-                                    <label className="block text-gray-700 text-sm font-medium mb-2" htmlFor="numeroDocumento">
-                                        Número de Documento *
-                                    </label>
-                                    <input
-                                        id="numeroDocumento"
-                                        type="text"
-                                        value={numeroDocumento}
-                                        onChange={(e) => setNumeroDocumento(e.target.value.toUpperCase())}
-                                        disabled={!selectedProveedor || !tipoDocumento}
-                                        className={`w-full px-3 py-2 md:px-4 md:py-2 rounded-lg border border-gray-300 shadow-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 ${!selectedProveedor || !tipoDocumento ? 'bg-gray-100 cursor-not-allowed' : ''}`}
-                                        placeholder="Ingrese número del documento"
-                                        required
-                                    />
-                                </div>
-                                
-                                {/* Segunda fila: Marca, Modelo, Número de Serie, Valor */}
-                                <div className="w-full max-[799px]:w-full min-[800px]:col-span-2 min-[1000px]:col-span-2 min-[1200px]:col-span-2 min-[1400px]:col-span-3">
-                                    <label className="block text-gray-700 text-sm font-medium mb-2" htmlFor="marca">
-                                        Marca *
-                                    </label>
-                                    <input
-                                        id="marca"
-                                        type="text"
-                                        value={newMarca}
-                                        onChange={(e) => setNewMarca(e.target.value.toUpperCase())}
-                                        disabled={!selectedProveedor}
-                                        className={`w-full px-3 py-2 md:px-4 md:py-2 rounded-lg border border-gray-300 shadow-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 ${!selectedProveedor ? 'bg-gray-100 cursor-not-allowed' : ''}`}
-                                        placeholder="Ingrese la marca"
-                                        required
-                                    />
-                                </div>
-                                <div className="w-full max-[799px]:w-full min-[800px]:col-span-2 min-[1000px]:col-span-2 min-[1200px]:col-span-3 min-[1400px]:col-span-4">
-                                    <label className="block text-gray-700 text-sm font-medium mb-2" htmlFor="modelo">
-                                        Modelo
-                                    </label>
-                                    <input
-                                        id="modelo"
-                                        type="text"
-                                        value={newModelo}
-                                        onChange={(e) => setNewModelo(e.target.value.toUpperCase())}
-                                        disabled={!selectedProveedor}
-                                        className={`w-full px-3 py-2 md:px-4 md:py-2 rounded-lg border border-gray-300 shadow-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 ${!selectedProveedor ? 'bg-gray-100 cursor-not-allowed' : ''}`}
-                                        placeholder="Ingrese el modelo"
-                                    />
-                                </div>
-                                <div className="w-full max-[799px]:w-full min-[800px]:col-span-2 min-[1000px]:col-span-2 min-[1200px]:col-span-3 min-[1400px]:col-span-3">
-                                    <label className="block text-gray-700 text-sm font-medium mb-2" htmlFor="numeroSerie">
-                                        Número de Serie *
-                                    </label>
-                                    <input
-                                        id="numeroSerie"
-                                        type="text"
-                                        value={serialNumber}
-                                        onChange={(e) => setNumeroSerie(e.target.value.toUpperCase())}
-                                        disabled={!selectedProveedor}
-                                        className={`w-full px-3 py-2 md:px-4 md:py-2 rounded-lg border border-gray-300 shadow-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 ${!selectedProveedor ? 'bg-gray-100 cursor-not-allowed' : ''}`}
-                                        placeholder="Ingrese el número de serie"
-                                        required
-                                    />
-                                </div>
-                                <div className="w-full max-[799px]:w-full min-[800px]:col-span-2 min-[1000px]:col-span-2 min-[1200px]:col-span-2 min-[1400px]:col-span-2">
-                                    <label className="block text-gray-700 text-sm font-medium mb-2" htmlFor="valor">
-                                        Valor
-                                    </label>
-                                    <input
-                                        id="valor"
-                                        type="text"
-                                        value={newValor}
-                                        onChange={(e) => setNewValor(e.target.value)}
-                                        disabled={!selectedProveedor}
-                                        className={`w-full px-3 py-2 md:px-4 md:py-2 rounded-lg border border-gray-300 shadow-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 ${!selectedProveedor ? 'bg-gray-100 cursor-not-allowed' : ''}`}
-                                        placeholder="Ingrese el valor"
-                                    />
-                                </div>
-                            </div>
-                            
-                            {/* Botones */}
-                            <div className="flex flex-col sm:flex-row justify-between gap-3 mt-6">
-                                <button
-                                    onClick={handleClosePopup}
-                                    className="px-6 py-2 bg-gray-500 hover:bg-gray-600 text-white rounded-md transition duration-200 order-2 sm:order-1"
-                                >
-                                    Cancelar
-                                </button>
-                                <button
-                                    onClick={handleAceptarRecepcion}
-                                    className="px-6 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-md transition duration-200 order-1 sm:order-2"
-                                >
-                                    Aceptar
-                                </button>
-                            </div>
+                            </select>
+                        </div>
+                        <div className="w-full max-[799px]:w-full min-[800px]:col-span-2 min-[1000px]:col-span-1 min-[1200px]:col-span-2 min-[1400px]:col-span-10">
+                            <label
+                                className="block text-gray-700 text-sm font-medium mb-2"
+                                htmlFor="desc_solicitud"
+                            >
+                                Observaciones de la Solicitud
+                            </label>
+                            <input
+                                id="desc_solicitud"
+                                type="text"
+                                name="desc_solicitud"
+                                value={getSelectedSolicitudObservaciones()}
+                                readOnly
+                                className="w-full px-3 py-2 md:px-4 md:py-2 rounded-lg border border-gray-300 shadow-sm bg-gray-50"
+                                placeholder="Observaciones de la solicitud seleccionada"
+                            />
                         </div>
                     </div>
-                </div>
-            )}
-            </form>
-        </div>
+                    
+                    {/* Información de la solicitud seleccionada */}
+                    {selectedSolicitud && (
+                        <div className="mt-6">
+                            <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
+                                <h3 className="text-lg font-semibold text-blue-800 mb-3">Información de la Solicitud</h3>
+                                {(() => {
+                                    const solicitudSeleccionada = solicitud.find(s => s._id === selectedSolicitud);
+                                    return solicitudSeleccionada ? (
+                                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 text-sm">
+                                            <div>
+                                                <span className="font-medium text-blue-700">Solicitante:</span>
+                                                <p className="text-blue-800">{solicitudSeleccionada.solicitante}</p>
+                                            </div>
+                                            <div>
+                                                <span className="font-medium text-blue-700">Cargo:</span>
+                                                <p className="text-blue-800">{solicitudSeleccionada.cargoSolicitante}</p>
+                                            </div>
+                                            <div>
+                                                <span className="font-medium text-blue-700">Beneficiario:</span>
+                                                <p className="text-blue-800">{solicitudSeleccionada.beneficiario}</p>
+                                            </div>
+                                            <div>
+                                                <span className="font-medium text-blue-700">Email:</span>
+                                                <p className="text-blue-800">{solicitudSeleccionada.emailSolicitante}</p>
+                                            </div>
+                                            <div>
+                                                <span className="font-medium text-blue-700">Teléfono:</span>
+                                                <p className="text-blue-800">{solicitudSeleccionada.telefonoSolicitante}</p>
+                                            </div>
+                                            <div>
+                                                <span className="font-medium text-blue-700">Prioridad:</span>
+                                                <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ml-2 ${
+                                                    solicitudSeleccionada.prioridad === 'urgente' ? 'bg-red-100 text-red-800' :
+                                                    solicitudSeleccionada.prioridad === 'alta' ? 'bg-orange-100 text-orange-800' :
+                                                    solicitudSeleccionada.prioridad === 'media' ? 'bg-yellow-100 text-yellow-800' :
+                                                    'bg-green-100 text-green-800'
+                                                }`}>
+                                                    {solicitudSeleccionada.prioridad}
+                                                </span>
+                                            </div>
+                                            {solicitudSeleccionada.fechaRequerida && (
+                                                <div>
+                                                    <span className="font-medium text-blue-700">Fecha Requerida:</span>
+                                                    <p className="text-blue-800">{new Date(solicitudSeleccionada.fechaRequerida).toLocaleDateString()}</p>
+                                                </div>
+                                            )}
+                                            {solicitudSeleccionada.centroCosto && (
+                                                <div>
+                                                    <span className="font-medium text-blue-700">Centro de Costo:</span>
+                                                    <p className="text-blue-800">
+                                                        {typeof solicitudSeleccionada.centroCosto === 'object'
+                                                            ? solicitudSeleccionada.centroCosto.nombre || solicitudSeleccionada.centroCosto.codigo || 'N/A'
+                                                            : solicitudSeleccionada.centroCosto}
+                                                    </p>
+                                                </div>
+                                            )}
+                                            <div>
+                                                <span className="font-medium text-blue-700">Estado:</span>
+                                                <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ml-2 ${
+                                                    solicitudSeleccionada.estado === 'aprobado' ? 'bg-green-100 text-green-800' :
+                                                    solicitudSeleccionada.estado === 'pendiente' ? 'bg-yellow-100 text-yellow-800' :
+                                                    solicitudSeleccionada.estado === 'rechazado' ? 'bg-red-100 text-red-800' :
+                                                    'bg-gray-100 text-gray-800'
+                                                }`}>
+                                                    {solicitudSeleccionada.estado}
+                                                </span>
+                                            </div>
+                                        </div>
+                                    ) : null;
+                                })()}
+                            </div>
+                        </div>
+                    )}
+                    
+                    {/* Tabla de detalle de la solicitud */}
+                    {selectedSolicitud && detalleSolicitud.length > 0 && (
+                        <div className="mt-6">
+                            <h3 className="text-lg font-semibold text-gray-800 mb-4">Detalle de la Solicitud - Recepción de Productos</h3>
+                            <div className="bg-white rounded-lg shadow max-h-96 overflow-y-auto">
+                                <div className="overflow-x-auto">
+                                    <table className="min-w-full divide-y divide-gray-200">
+                                        <thead className="bg-gray-50 sticky top-0 z-10">
+                                            <tr>
+                                                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                                    Nro. Solicitud
+                                                </th>
+                                                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                                    Fecha Recepción
+                                                </th>
+                                                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                                    Producto
+                                                </th>
+                                                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                                    Cantidad Total
+                                                </th>
+                                                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                                    Recibida
+                                                </th>
+                                                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                                    Pendiente
+                                                </th>
+                                                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                                    Estado
+                                                </th>
+                                            </tr>
+                                        </thead>
+                                        <tbody className="bg-white divide-y divide-gray-200">
+                                            {detalleSolicitud.map((detalle, index) => {
+                                                const cantidadPendiente = detalle.cantidadPendiente || (detalle.cantidad - (detalle.cantidadRecibida || 0));
+                                                const cantidadRecibida = detalle.cantidadRecibida || 0;
+                                                const estaCompleto = cantidadPendiente === 0;
+                                                return (
+                                                    <tr key={`${detalle.productoId}-${index}`} className={index % 2 === 0 ? 'bg-white' : 'bg-gray-50'}>
+                                                        <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
+                                                            {detalle.nroSolicitud}
+                                                        </td>
+                                                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                                                            {new Date().toLocaleDateString()}
+                                                        </td>
+                                                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                                                            {detalle.producto}
+                                                            <div className="text-xs text-gray-400">ID: {detalle.productoId}</div>
+                                                        </td>
+                                                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                                                            {detalle.cantidad}
+                                                        </td>
+                                                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                                                            <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
+                                                                cantidadRecibida > 0 ? 'bg-blue-100 text-blue-800' : 'bg-gray-100 text-gray-800'
+                                                            }`}>
+                                                                {cantidadRecibida}
+                                                            </span>
+                                                        </td>
+                                                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                                                            <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
+                                                                cantidadPendiente > 0 ? 'bg-yellow-100 text-yellow-800' : 'bg-green-100 text-green-800'
+                                                            }`}>
+                                                                {cantidadPendiente}
+                                                            </span>
+                                                        </td>
+                                                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                                                            {estaCompleto ? (
+                                                                <span className="inline-flex items-center px-3 py-2 rounded-full text-sm font-medium bg-green-100 text-green-800">
+                                                                    ✓ RECIBIDO
+                                                                </span>
+                                                            ) : (
+                                                                <button
+                                                                    type="button"
+                                                                    onClick={(e) => {
+                                                                        e.preventDefault();
+                                                                        e.stopPropagation();
+                                                                        handleRecibirClick(detalle);
+                                                                    }}
+                                                                    className="bg-green-600 hover:bg-green-700 text-white font-bold py-2 px-4 rounded transition duration-200"
+                                                                >
+                                                                    Recibir ({cantidadPendiente})
+                                                                </button>
+                                                            )}
+                                                        </td>
+                                                    </tr>
+                                                );
+                                            })}
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+                    )}
+
+                    {/* Resumen de recepciones */}
+                    {detalleRecepciones.length > 0 && (
+                        <div className="mt-6">
+                            <h3 className="text-lg font-semibold text-gray-800 mb-4">Resumen de Recepciones</h3>
+                            <div className="bg-white rounded-lg shadow max-h-80 overflow-y-auto">
+                                <div className="overflow-x-auto">
+                                    <table className="min-w-full divide-y divide-gray-200">
+                                        <thead className="bg-gray-50 sticky top-0 z-10">
+                                            <tr>
+                                                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                                    Producto
+                                                </th>
+                                                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                                    Número de Serie
+                                                </th>
+                                                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                                    Código de Inventario
+                                                </th>
+                                                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                                    Fecha de Recepción
+                                                </th>
+                                            </tr>
+                                        </thead>
+                                        <tbody className="bg-white divide-y divide-gray-200">
+                                            {detalleRecepciones.map((recepcion, index) => (
+                                                <tr key={index} className={index % 2 === 0 ? 'bg-white' : 'bg-gray-50'}>
+                                                    <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
+                                                        {recepcion.producto}
+                                                    </td>
+                                                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                                                        {recepcion.numeroSerie}
+                                                    </td>
+                                                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                                                        {recepcion.numeroDocumento}
+                                                    </td>
+                                                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                                                        {new Date(recepcion.fechaRecepcion).toLocaleString()}
+                                                    </td>
+                                                </tr>
+                                            ))}
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+                    )}
+
+                    {/* Popup para recepción de productos */}
+                    {showPopup && selectedProductoRecepcion && (
+                        <div className="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full z-50">
+                            <div className="relative top-10 mx-auto p-5 border max-w-4xl w-[95%] shadow-lg rounded-md bg-white">
+                                <div className="mt-3">
+                                    <h3 className="text-lg leading-6 font-medium text-gray-900 text-center mb-4">Recepción de Producto</h3>
+                                    
+                                    {/* Información del producto */}
+                                    <div className="mb-6 p-4 bg-gray-50 rounded-lg">
+                                        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-sm">
+                                            <div>
+                                                <span className="font-medium text-gray-700">Producto:</span>
+                                                <p className="text-gray-900">{selectedProductoRecepcion.producto}</p>
+                                            </div>
+                                            <div>
+                                                <span className="font-medium text-gray-700">Cantidad Total:</span>
+                                                <p className="text-gray-900">{selectedProductoRecepcion.cantidad}</p>
+                                            </div>
+                                            <div>
+                                                <span className="font-medium text-gray-700">Pendiente por Recibir:</span>
+                                                <span className="ml-1 inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-yellow-100 text-yellow-800">
+                                                    {getCantidadPendiente(selectedProductoRecepcion.productoId)}
+                                                </span>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    {/* Mostrar recepciones anteriores si existen */}
+                                    {(() => {
+                                        const recepcionesProducto = detalleRecepciones.filter(r => r.productoId === selectedProductoRecepcion.productoId);
+                                        return recepcionesProducto.length > 0 && (
+                                            <div className="mb-6 p-4 bg-blue-50 rounded-lg">
+                                                <p className="text-sm font-medium text-blue-700 mb-3">Recepciones Realizadas ({recepcionesProducto.length}):</p>
+                                                <div className="overflow-x-auto">
+                                                    <table className="min-w-full text-xs">
+                                                        <thead>
+                                                            <tr className="bg-blue-100">
+                                                                <th className="px-2 py-1 text-left font-medium text-blue-700">Serie</th>
+                                                                <th className="px-2 py-1 text-left font-medium text-blue-700">Documento</th>
+                                                                <th className="px-2 py-1 text-left font-medium text-blue-700">Fecha</th>
+                                                            </tr>
+                                                        </thead>
+                                                        <tbody>
+                                                            {recepcionesProducto.map((recepcion, index) => (
+                                                                <tr key={index} className={index % 2 === 0 ? 'bg-white' : 'bg-blue-25'}>
+                                                                    <td className="px-2 py-1 text-blue-600">{recepcion.numeroSerie}</td>
+                                                                    <td className="px-2 py-1 text-blue-600">{recepcion.numeroDocumento}</td>
+                                                                    <td className="px-2 py-1 text-blue-600">{new Date(recepcion.fechaRecepcion).toLocaleDateString()}</td>
+                                                                </tr>
+                                                            ))}
+                                                        </tbody>
+                                                    </table>
+                                                </div>
+                                            </div>
+                                        );
+                                    })()}
+
+                                    {/* Formulario de campos en grilla responsive */}
+                                    <div className="grid grid-cols-1 max-[799px]:grid-cols-1 min-[1000px]:grid-cols-8 min-[1200px]:grid-cols-10 min-[1400px]:grid-cols-12 gap-4">
+                                        {/* Primera fila: Proveedor, Tipo Documento, Número Documento */}
+                                        <div className="w-full max-[799px]:w-full min-[800px]:col-span-2 min-[1000px]:col-span-3 min-[1200px]:col-span-4 min-[1400px]:col-span-4">
+                                            <label className="block text-gray-700 text-sm font-medium mb-2" htmlFor="proveedor">
+                                                Proveedor *
+                                            </label>
+                                            <select
+                                                id="proveedor"
+                                                value={selectedProveedor}
+                                                onChange={(e) => setSelectedProveedor(e.target.value)}
+                                                className="w-full px-3 py-2 md:px-4 md:py-2 rounded-lg border border-gray-300 shadow-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                                                required
+                                            >
+                                                <option value="">Seleccione un proveedor</option>
+                                                {proveedores.map((proveedor) => (
+                                                    <option key={proveedor._id} value={proveedor._id}>
+                                                        {proveedor.razonSocial}
+                                                    </option>
+                                                ))}
+                                            </select>
+                                        </div>
+                                        <div className="w-full max-[799px]:w-full min-[800px]:col-span-2 min-[1000px]:col-span-2 min-[1200px]:col-span-3 min-[1400px]:col-span-5">
+                                            <label className="block text-gray-700 text-sm font-medium mb-2" htmlFor="tipoDocumento">
+                                                Tipo de Documento *
+                                            </label>
+                                            <select
+                                                id="tipoDocumento"
+                                                value={tipoDocumento}
+                                                onChange={(e) => setTipoDocumento(e.target.value)}
+                                                disabled={!selectedProveedor}
+                                                className={`w-full px-3 py-2 md:px-4 md:py-2 rounded-lg border border-gray-300 shadow-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 ${!selectedProveedor ? 'bg-gray-100 cursor-not-allowed' : ''}`}
+                                                required
+                                            >
+                                                <option value="">Seleccione tipo</option>
+                                                <option value="GUIA DESPACHO">GUIA DESPACHO</option>
+                                                <option value="FACTURA">FACTURA</option>
+                                                <option value="ORDEN DE RETIRO">ORDEN DE RETIRO</option>
+                                                <option value="ORDEN DE TRANSPORTE">ORDEN DE TRANSPORTE</option>
+                                            </select>
+                                        </div>
+                                        <div className="w-full max-[799px]:w-full min-[800px]:col-span-2 min-[1000px]:col-span-3 min-[1200px]:col-span-3 min-[1400px]:col-span-3">
+                                            <label className="block text-gray-700 text-sm font-medium mb-2" htmlFor="numeroDocumento">
+                                                Número de Documento *
+                                            </label>
+                                            <input
+                                                id="numeroDocumento"
+                                                type="text"
+                                                value={numeroDocumento}
+                                                onChange={(e) => setNumeroDocumento(e.target.value.toUpperCase())}
+                                                disabled={!selectedProveedor || !tipoDocumento}
+                                                className={`w-full px-3 py-2 md:px-4 md:py-2 rounded-lg border border-gray-300 shadow-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 ${!selectedProveedor || !tipoDocumento ? 'bg-gray-100 cursor-not-allowed' : ''}`}
+                                                placeholder="Ingrese número del documento"
+                                                required
+                                            />
+                                        </div>
+                                        
+                                        {/* Segunda fila: Marca, Modelo, Número de Serie, Valor */}
+                                        <div className="w-full max-[799px]:w-full min-[800px]:col-span-2 min-[1000px]:col-span-2 min-[1200px]:col-span-2 min-[1400px]:col-span-3">
+                                            <label className="block text-gray-700 text-sm font-medium mb-2" htmlFor="marca">
+                                                Marca *
+                                            </label>
+                                            <input
+                                                id="marca"
+                                                type="text"
+                                                value={newMarca}
+                                                onChange={(e) => setNewMarca(e.target.value.toUpperCase())}
+                                                disabled={!selectedProveedor}
+                                                className={`w-full px-3 py-2 md:px-4 md:py-2 rounded-lg border border-gray-300 shadow-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 ${!selectedProveedor ? 'bg-gray-100 cursor-not-allowed' : ''}`}
+                                                placeholder="Ingrese la marca"
+                                                required
+                                            />
+                                        </div>
+                                        <div className="w-full max-[799px]:w-full min-[800px]:col-span-2 min-[1000px]:col-span-2 min-[1200px]:col-span-3 min-[1400px]:col-span-4">
+                                            <label className="block text-gray-700 text-sm font-medium mb-2" htmlFor="modelo">
+                                                Modelo
+                                            </label>
+                                            <input
+                                                id="modelo"
+                                                type="text"
+                                                value={newModelo}
+                                                onChange={(e) => setNewModelo(e.target.value.toUpperCase())}
+                                                disabled={!selectedProveedor}
+                                                className={`w-full px-3 py-2 md:px-4 md:py-2 rounded-lg border border-gray-300 shadow-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 ${!selectedProveedor ? 'bg-gray-100 cursor-not-allowed' : ''}`}
+                                                placeholder="Ingrese el modelo"
+                                            />
+                                        </div>
+                                        <div className="w-full max-[799px]:w-full min-[800px]:col-span-2 min-[1000px]:col-span-2 min-[1200px]:col-span-3 min-[1400px]:col-span-3">
+                                            <label className="block text-gray-700 text-sm font-medium mb-2" htmlFor="numeroSerie">
+                                                Número de Serie *
+                                            </label>
+                                            <input
+                                                id="numeroSerie"
+                                                type="text"
+                                                value={serialNumber}
+                                                onChange={(e) => setNumeroSerie(e.target.value.toUpperCase())}
+                                                disabled={!selectedProveedor}
+                                                className={`w-full px-3 py-2 md:px-4 md:py-2 rounded-lg border border-gray-300 shadow-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 ${!selectedProveedor ? 'bg-gray-100 cursor-not-allowed' : ''}`}
+                                                placeholder="Ingrese el número de serie"
+                                                required
+                                            />
+                                        </div>
+                                        <div className="w-full max-[799px]:w-full min-[800px]:col-span-2 min-[1000px]:col-span-2 min-[1200px]:col-span-2 min-[1400px]:col-span-2">
+                                            <label className="block text-gray-700 text-sm font-medium mb-2" htmlFor="valor">
+                                                Valor
+                                            </label>
+                                            <input
+                                                id="valor"
+                                                type="text"
+                                                value={newValor}
+                                                onChange={(e) => setNewValor(e.target.value)}
+                                                disabled={!selectedProveedor}
+                                                className={`w-full px-3 py-2 md:px-4 md:py-2 rounded-lg border border-gray-300 shadow-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 ${!selectedProveedor ? 'bg-gray-100 cursor-not-allowed' : ''}`}
+                                                placeholder="Ingrese el valor"
+                                            />
+                                        </div>
+                                    </div>
+                                    
+                                    {/* Botones */}
+                                    <div className="flex flex-col sm:flex-row justify-between gap-3 mt-6">
+                                        <button
+                                            onClick={handleClosePopup}
+                                            className="px-6 py-2 bg-gray-500 hover:bg-gray-600 text-white rounded-md transition duration-200 order-2 sm:order-1"
+                                        >
+                                            Cancelar
+                                        </button>
+                                        <button
+                                            onClick={handleAceptarRecepcion}
+                                            className="px-6 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-md transition duration-200 order-1 sm:order-2"
+                                        >
+                                            Aceptar
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    )}
+                </form>
+            </div>
         </div>
     );
 }
