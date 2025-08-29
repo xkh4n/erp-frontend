@@ -8,6 +8,7 @@
     /* Altura completa de la ventana del navegador */
     height: 100vh;
     height: 100dvh; /* Soporte para navegadores modernos */
+    overflow-y: auto;
     
     /* Prevenir scroll elástico en iOS */
     overscroll-behavior: none;
@@ -25,7 +26,7 @@
     
     /* Prevenir scroll horizontal */
     overflow-x: hidden;
-    
+    overflow-y: auto;
     /* Ocultar la barra de direcciones en móviles */
     position: fixed;
     width: 100%;
@@ -46,6 +47,7 @@
     height: 100vh;
     height: 100dvh;
     overflow-x: hidden;
+    overflow-y: auto;
     -webkit-overflow-scrolling: touch;
   }
   
@@ -54,6 +56,7 @@
     min-height: 100vh;
     min-height: 100dvh;
     width: 100%;
+    overflow-y: auto;
     
     /* En móviles, usar toda la pantalla */
     @media (max-width: 768px) {
