@@ -20,6 +20,7 @@ import AgregarProducto from "../Views/Adquisiciones/Productos/Agregar";
 import Asignar from "../Views/Adquisiciones/Asignacion/asignar";
 import ProtectedRoute from "../Components/ProtectedRoute";
 import LoginGuard from "../Components/LoginGuard";
+import IngresoInventario from "../Views/Adquisiciones/Inventario/Ingresos";
 
 export default function index() {
     return (
@@ -109,6 +110,11 @@ export default function index() {
                     <Route path="/asignacion" element={
                         <ProtectedRoute>
                             <Asignar />
+                        </ProtectedRoute>
+                    } />
+                    <Route path="/inventario_ingresos" element={
+                        <ProtectedRoute>
+                            <IngresoInventario />
                         </ProtectedRoute>
                     } />
                 </Route>

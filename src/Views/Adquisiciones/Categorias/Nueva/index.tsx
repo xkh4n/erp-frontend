@@ -39,7 +39,7 @@ export default function CrearCategoria() {
             
             // Manejar respuesta exitosa, incluso con array vacío
             if (response.data.codigo === 200) {
-                setCategorias(response.data.data || []);
+                setCategorias(response.data.data.sort((a: Categoria, b: Categoria) => a.nombre.localeCompare(b.nombre)) || []);
                 if (response.data.data?.length === 0) {
                     console.log('No hay categorías disponibles. Se puede crear la primera categoría.');
                 }
