@@ -1,0 +1,51 @@
+/* Forzar el ancho del popper igual al input */
+.datepicker-popper {
+    min-width: 15rem !important;
+    width: 15rem !important;
+    max-width: 15rem !important;
+}
+.react-datepicker__triangle {
+  left: 40px !important;
+}
+
+/* Fondo del calendario */
+.react-datepicker__month-container {
+  background: #f8fafc !important; /* Cambia a tu color preferido */
+}
+
+/* Encabezado (barra superior con mes y año) */
+.react-datepicker__header {
+  background-color: #1e3a8a !important; /* Azul oscuro */
+  color: #fff !important;
+  border-bottom: 1px solid #1e3a8a !important;
+}
+.react-datepicker__current-month {
+  font-weight: bold !important;
+  color: #dbeafe;
+}
+
+/* Día seleccionado */
+.react-datepicker__day--selected,
+.react-datepicker__day--keyboard-selected {
+  background-color: #100eb1 !important; /* Azul */
+  color: #fff !important;
+}
+
+/* Día actual */
+.react-datepicker__day--today {
+  border: 1px solid #2c1cb4 !important;
+  color: #ffffff !important;
+  font-weight: bold;
+}
+
+/* Días al pasar el mouse */
+.react-datepicker__day:hover {
+  background-color: #f04324 !important;
+  color: #1e3a8a !important;
+}
+
+/* Cambia el color de los botones de navegación */
+.react-datepicker__navigation {
+  top: 5px !important;
+  color: #1e3a8a !important;
+}
