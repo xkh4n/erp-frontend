@@ -5,6 +5,7 @@ import { useNavigate, useLocation } from "react-router-dom";
 import axios from "axios";
 import { Toast, showApprovalToast, showRejectionToast, showErrorToast, showInfoToast } from '../../../../Components/Toast';
 import { useAuth } from "../../../../Library/Context/AuthContext";
+import { useCategorias } from "../../../../Library/Hooks/Models/useCategorias";
 
 import { handleError } from "../../../../Library/Utils/errorHandler";
 
@@ -15,13 +16,6 @@ type Ccostos = {
     descripcion: string;
 };
 
-
-type Categorias = {
-    _id: string;
-    codigo: string;
-    nombre: string;
-    descripcion: string;
-};
 
 type Producto = {
     _id: string;
@@ -62,7 +56,7 @@ export default function CrearSolicitud() {
     const [cuentaBeneficiario, setCuentaBeneficiario] = useState("");
     const [observaciones, setObservaciones] = useState("");
     const [centroCostos, setCentroCostos] = useState<Ccostos[]>([]);
-    const [categorias, setCategorias] = useState<Categorias[]>([]);
+    const { categorias } = useCategorias();
     const [selectedCategoria, setSelectedCategoria] = useState("");
     const [productos, setProductos] = useState<Producto[]>([]);
     const [selectedProducto, setSelectedProducto] = useState("");
@@ -101,37 +95,6 @@ export default function CrearSolicitud() {
         
         if (isAuthenticated) {
             fetchCentroCostos();
-        }
-    }, [handleErrorWithContext, isAuthenticated, accessToken]);
-
-    // Cargar las categorías al montar el componente
-    useEffect(() => {
-        const fetchCategorias = async () => {
-            try {
-                if (!isAuthenticated || !accessToken) {
-                    console.warn('Usuario no autenticado para cargar categorías');
-                    return;
-                }
-
-                const response = await axios.post(
-                    `${import.meta.env.VITE_API_URL}/categoria/todos`,
-                    {},
-                    {
-                        headers: {
-                            'Authorization': `Bearer ${accessToken}`,
-                            'Content-Type': 'application/json'
-                        }
-                    }
-                );
-                console.log("Se piden las categorias");
-                setCategorias(response.data.data || []);
-            } catch (error) {
-                handleErrorWithContext(error);
-            }
-        };
-        
-        if (isAuthenticated) {
-            fetchCategorias();
         }
     }, [handleErrorWithContext, isAuthenticated, accessToken]);
 
@@ -381,10 +344,10 @@ export default function CrearSolicitud() {
     };
     
     return (
-    <div className="flex flex-col items-center justify-center min-h-screen bg-gray-200 p-4 md:p-5 lg:p-6 overflow-y-auto">
+        <div className="flex flex-col items-center justify-center h-max bg-gray-200 p-4 md:p-5 lg:p-6">
             <Toast autoClose={3000} theme="dark" className="custom-toast"/>
             <div className="w-full max-w-[95%] mx-auto px-4 sm:px-6 lg:px-8">
-                <h1 className="text-xl md:text-2xl lg:text-3xl font-bold mb-6 text-center text-gray-800">
+                <h1 className="text-xl md:text-2xl lg:text-3xl font-bold mb-6 text-center text-blue-800">
                     Crear Solicitud de Producto
                 </h1>
                 <form className="w-full">

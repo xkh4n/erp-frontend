@@ -29,10 +29,16 @@ export default function Navbar() {
         window.addEventListener('resize', handleResize);
         return () => window.removeEventListener('resize', handleResize);
     }, []);
-    
-    const menuItems: MenuItem[] = [
+
+    // Menú para usuarios no autenticados
+    const unauthenticatedMenuItems: MenuItem[] = [
         { label: 'Home', link: '/' },
         { label: 'Contacto', link: '/contacto'},
+    ];
+
+    // Menú completo para usuarios autenticados
+    const authenticatedMenuItems: MenuItem[] = [
+        { label: 'Home', link: '/' },
         { label: 'Registro', link: '/registro'},
         { label: 'Sistemas', link: '#', menuItems: [
             { label: 'Desarrollo', link: '#' },
@@ -310,7 +316,7 @@ const menulvl0SinSubmenu = (label:string, link:string, isFirstLevel:boolean = tr
                 {/* Desktop Menu - visible on screens >= 1200px */}
                 <div className="hidden xl:flex text-blue-950 font-bold">
                     <ul className="flex items-center space-x-2">
-                        {renderMenuItems(menuItems)}
+                        {renderMenuItems(isAuthenticated ? authenticatedMenuItems : unauthenticatedMenuItems)}
                     </ul>
                 </div>
 
@@ -335,7 +341,7 @@ const menulvl0SinSubmenu = (label:string, link:string, isFirstLevel:boolean = tr
             <div className={`xl:hidden fixed top-14 left-0 w-full bg-white shadow-lg transition-transform duration-300 ease-in-out z-50 ${isMenuOpen ? 'transform translate-x-0' : 'transform -translate-x-full'}`}>
                 <div className="mobile-menu p-4">
                     <ul className="space-y-2">
-                        {renderMobileMenuItems(menuItems)}
+                        {renderMobileMenuItems(isAuthenticated ? authenticatedMenuItems : unauthenticatedMenuItems)}
                     </ul>
                     <div className="mt-4 pt-4 border-t border-gray-200">
                         {isAuthenticated ? (
