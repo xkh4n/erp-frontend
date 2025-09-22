@@ -193,8 +193,10 @@ export default function IngresoProducto() {
                     // Ejecutar automáticamente la función de finalizar recepciones
                     setTimeout(() => {
                         handlerGuardarRecepciones();
-                        // Recargar las solicitudes para excluir la completada
-                        recargarSolicitudes();
+                        // Recargar las solicitudes con delay para evitar rate limiting
+                        setTimeout(() => {
+                            recargarSolicitudes();
+                        }, 1000); // Esperar 1 segundo adicional antes de recargar
                     }, 2000); // Esperar 2 segundos para que el usuario vea el mensaje
                 }
 
@@ -249,7 +251,17 @@ export default function IngresoProducto() {
             console.error('Error al recargar solicitudes:', error);
             setSolicitud([]);
             if (axios.isAxiosError(error)) {
-                if (error.code === 'ERR_EMPTY_RESPONSE' || error.message.includes('ERR_EMPTY_RESPONSE')) {
+                if (error.response?.status === 429) {
+                    // Rate limiting - esperar y reintentar
+                    toast.warning("Demasiadas peticiones. Reintentando en 3 segundos...", {
+                        position: "top-right",
+                        autoClose: 3000,
+                    });
+                    setTimeout(() => {
+                        recargarSolicitudes();
+                    }, 3000);
+                    return;
+                } else if (error.code === 'ERR_EMPTY_RESPONSE' || error.message.includes('ERR_EMPTY_RESPONSE')) {
                     toast.error("El servidor no está respondiendo. Verifique que el backend esté ejecutándose.", {
                         position: "top-right",
                         autoClose: 5000,

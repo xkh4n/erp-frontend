@@ -39,7 +39,7 @@ export default function CrearCategoria() {
             
             // Manejar respuesta exitosa, incluso con array vacío
             if (response.data.codigo === 200) {
-                setCategorias(response.data.data || []);
+                setCategorias(response.data.data.sort((a: Categoria, b: Categoria) => a.nombre.localeCompare(b.nombre)) || []);
                 if (response.data.data?.length === 0) {
                     console.log('No hay categorías disponibles. Se puede crear la primera categoría.');
                 }
@@ -201,7 +201,7 @@ export default function CrearCategoria() {
 	};
 
 	return (
-		<div className="flex flex-col items-center justify-center h-max bg-gray-200 p-4 md:p-5 lg:p-6">
+		<div className="flex flex-col items-center min-h-screen bg-gray-200 p-4 md:p-5 lg:p-6">
 			<Toast autoClose={3000} theme="dark" className="custom-toast"/>
 			<div className="w-full max-w-[95%] mx-auto px-4 sm:px-6 lg:px-8">
 				<h1 className="text-xl md:text-2xl lg:text-3xl font-bold mb-6 text-center text-gray-800">

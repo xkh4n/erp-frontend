@@ -20,6 +20,8 @@ import AgregarProducto from "../Views/Adquisiciones/Productos/Agregar";
 import Asignar from "../Views/Adquisiciones/Asignacion/asignar";
 import ProtectedRoute from "../Components/ProtectedRoute";
 import LoginGuard from "../Components/LoginGuard";
+import IngresoInventario from "../Views/Adquisiciones/Inventario/Ingresos";
+import ConsultaInventario from "../Views/Adquisiciones/Inventario/Stock";
 
 export default function index() {
     return (
@@ -31,19 +33,14 @@ export default function index() {
         >
             <Routes>
                 <Route element={<MainLayout />}>
-                    <Route path="/" element={
-                        <ProtectedRoute>
-                            <Home />
-                        </ProtectedRoute>
-                    } />
+                    {/* Páginas públicas con navbar */}
+                    <Route path="/" element={<Home />} />
+                    <Route path="/contacto" element={<Contacto />} />
+                    
+                    {/* Rutas protegidas */}
                     <Route path="/devolucion" element={
                         <ProtectedRoute>
                             <BajaProducto />
-                        </ProtectedRoute>
-                    } />
-                    <Route path="/contacto" element={
-                        <ProtectedRoute>
-                            <Contacto />
                         </ProtectedRoute>
                     } />
                     <Route path="/registro" element={
@@ -81,11 +78,6 @@ export default function index() {
                             <IngresoProducto />
                         </ProtectedRoute>
                     } />
-                    <Route path="/asignacion" element={
-                        <ProtectedRoute>
-                            <Asignar />
-                        </ProtectedRoute>
-                    } />
                     <Route path="/crear_solicitud" element={
                         <ProtectedRoute>
                             <CrearSolicitud />
@@ -109,6 +101,16 @@ export default function index() {
                     <Route path="/asignacion" element={
                         <ProtectedRoute>
                             <Asignar />
+                        </ProtectedRoute>
+                    } />
+                    <Route path="/inventario_ingresos" element={
+                        <ProtectedRoute>
+                            <IngresoInventario />
+                        </ProtectedRoute>
+                    } />
+                    <Route path="/consultar_inventario" element={
+                        <ProtectedRoute>
+                            <ConsultaInventario />
                         </ProtectedRoute>
                     } />
                 </Route>
