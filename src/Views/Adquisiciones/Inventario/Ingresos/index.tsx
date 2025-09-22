@@ -1,3 +1,5 @@
+import { saveOutline } from "ionicons/icons";
+import { IonIcon } from "@ionic/react";
 import { Toast/*, showApprovalToast, showRejectionToast, showErrorToast, showInfoToast*/ } from '../../../../Components/Toast';
 import { useState, useEffect, useCallback } from 'react';
 import { useNavigate, useLocation } from "react-router-dom";
@@ -172,7 +174,11 @@ export default function IngresoInventario() {
         }
     }, [handleErrorWithContext, isAuthenticated, accessToken]);
 
-    // 
+    const handlerSubmit = async () => {
+
+        // Implement form submission logic here
+    };
+
     return (
         <div className="flex flex-col items-center min-h-screen bg-gray-200 p-4 md:p-5 lg:p-6">
             <Toast autoClose={3000} theme="dark" className="custom-toast"/>
@@ -180,9 +186,25 @@ export default function IngresoInventario() {
                 <h1 className="text-2xl font-bold mb-4 text-blue-900 text-center pb-8">Ingreso de Inventario</h1>
                 <form className="w-full">
                     {/* Form fields go here */}
-                    <div className="grid grid-cols-1 max-[799px]:grid-cols-1  min-[1000px]:grid-cols-8 min-[1200px]:grid-cols-10 min-[1400px]:grid-cols-12 gap-4">
+                    <div className="grid grid-cols-1 max-[799px]:grid-cols-1 min-[800px]:grid-cols-6  min-[1000px]:grid-cols-8 min-[1200px]:grid-cols-10 min-[1400px]:grid-cols-10 gap-4">
+                        {/* Datepicker */}
+                        <div className="w-full max-[799px]:w-full min-[800px]:col-span-2 min-[1000px]:col-span-2 min-[1200px]:col-span-2 min-[1400px]:col-span-2">
+                            <label
+                                className="block text-gray-700 text-sm font-medium mb-2"
+                                htmlFor="fechaIngreso"
+                            >
+                                Fecha de Ingreso
+                            </label>
+                            <NewDatePicker
+                                id="fechaIngreso"
+                                name="fechaIngreso"
+                                selected={fechaIngreso}
+                                onChange={setFechaIngreso}
+                                required
+                            />
+                        </div>
                         {/* Categorias */}
-                        <div className="w-full max-[799px]:w-full min-[800px]:col-span-3 min-[1000px]:col-span-2 min-[1200px]:col-span-2 min-[1400px]:col-span-2">
+                        <div className="w-full max-[799px]:w-full min-[800px]:col-span-4 min-[1000px]:col-span-3 min-[1200px]:col-span-3 min-[1400px]:col-span-2">
                             <label
                                 className="block text-gray-700 text-sm font-medium mb-2"
                                 htmlFor="categorias"
@@ -206,7 +228,7 @@ export default function IngresoInventario() {
                             </select>
                         </div>
                         {/* Productos */}
-                        <div className="w-full max-[799px]:w-full min-[800px]:col-span-3 min-[1000px]:col-span-2 min-[1200px]:col-span-2 min-[1400px]:col-span-2">
+                        <div className="w-full max-[799px]:w-full min-[800px]:col-span-3 min-[1000px]:col-span-3 min-[1200px]:col-span-5 min-[1400px]:col-span-2">
                             <label
                                 className="block text-gray-700 text-sm font-medium mb-2"
                                 htmlFor="productos"
@@ -230,7 +252,7 @@ export default function IngresoInventario() {
                             </select>
                         </div>
                         {/* Centros de Costos */}
-                        <div className="w-full max-[799px]:w-full min-[800px]:col-span-3 min-[1000px]:col-span-2 min-[1200px]:col-span-2 min-[1400px]:col-span-4">
+                        <div className="w-full max-[799px]:w-full min-[800px]:col-span-3 min-[1000px]:col-span-3 min-[1200px]:col-span-3 min-[1400px]:col-span-4">
                             <label
                                 className="block text-gray-700 text-sm font-medium mb-2"
                                 htmlFor="centrosCostos"
@@ -254,7 +276,7 @@ export default function IngresoInventario() {
                             </select>
                         </div>
                         {/* Label Nro de Serie */}
-                        <div className="w-full max-[799px]:w-full min-[800px]:col-span-3 min-[1000px]:col-span-2 min-[1200px]:col-span-2 min-[1400px]:col-span-2">
+                        <div className="w-full max-[799px]:w-full min-[800px]:col-span-2 min-[1000px]:col-span-2 min-[1200px]:col-span-3 min-[1400px]:col-span-2">
                             <label
                                 className="block text-gray-700 text-sm font-medium mb-2"
                                 htmlFor="nroSerie"
@@ -271,24 +293,8 @@ export default function IngresoInventario() {
                                 onChange={(e) => setNroSerie(e.target.value.toUpperCase())}
                             />
                         </div>
-                        {/* Datepicker */}
-                        <div className="w-full max-[799px]:w-full min-[800px]:col-span-3 min-[1000px]:col-span-2 min-[1200px]:col-span-2 min-[1400px]:col-span-2">
-                            <label
-                                className="block text-gray-700 text-sm font-medium mb-2"
-                                htmlFor="fechaIngreso"
-                            >
-                                Fecha de Ingreso
-                            </label>
-                            <NewDatePicker
-                                id="fechaIngreso"
-                                name="fechaIngreso"
-                                selected={fechaIngreso}
-                                onChange={setFechaIngreso}
-                                required
-                            />
-                        </div>
                         {/* Proveedor */}
-                        <div className="w-full max-[799px]:w-full min-[800px]:col-span-3 min-[1000px]:col-span-2 min-[1200px]:col-span-2 min-[1400px]:col-span-2">
+                        <div className="w-full max-[799px]:w-full min-[800px]:col-span-4 min-[1000px]:col-span-3 min-[1200px]:col-span-4 min-[1400px]:col-span-8">
                             <label
                                 className="block text-gray-700 text-sm font-medium mb-2"
                                 htmlFor="proveedor"
@@ -311,6 +317,16 @@ export default function IngresoInventario() {
                                 ))}
                             </select>
                         </div>
+                    </div>
+                    <div className="flex flex-1 row-auto  justify-center">
+                        <button
+                            type="button"
+                            onClick={handlerSubmit}
+                            className="flex justify-center mt-5 items-center bg-blue-950 hover:bg-red-600 shadow-red-600/50 text-white focus:outline-none focus:ring py-2 w-60 rounded-full shadow-xl hover:shadow-blue-800/50 transition delay-10 duration-300 ease-in-out hover:translate-y-1"
+                        >
+                            <IonIcon icon={saveOutline} className="w-5 h-5" />
+                            <p className="ml-1 text-lg">Guardar</p>
+                        </button>
                     </div>
                 </form>
             </div>

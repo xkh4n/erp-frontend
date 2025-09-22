@@ -1,6 +1,6 @@
 import { saveOutline } from "ionicons/icons";
 import { IonIcon } from "@ionic/react";
-import { useState, useEffect, useCallback } from "react";
+import { useState, useCallback } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { IsParagraph } from "../../../../Library/Validations";
 import { createValidationError } from "../../../../Library/Errores";
@@ -9,19 +9,12 @@ import axios from "axios";
 import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import { useAuth } from "../../../../Library/Context/AuthContext";
-
-
-type Categoria = {
-	_id: string;
-	codigo: string;
-	nombre: string;
-	descripcion: string;
-};
+import { useCategorias } from "../../../../Library/Hooks/Models/useCategorias";
 
 export default function CrearProducto() {
 	const navigate = useNavigate();
 	const location = useLocation();
-	const { accessToken, isAuthenticated } = useAuth();
+	const { accessToken } = useAuth();
 
 	// Función helper para manejo de errores con contexto fijo
 	const handleErrorWithContext = useCallback((error: unknown) => {
@@ -33,33 +26,7 @@ export default function CrearProducto() {
 	const [productoDescripcion, setDescripcion] = useState("");
 	const [selectedCategoria, setSelectedCategoria] = useState("");
 	const [marca, setMarca] = useState("");
-	const [categorias, setCategorias] = useState<Categoria[]>([]);
-
-    useEffect(() => {
-        const fetchCategorias = async () => {
-            try {
-                if (!isAuthenticated || !accessToken) {
-                    console.warn('Usuario no autenticado para cargar categorías');
-                    return;
-                }
-
-                const response = await axios.post(
-                    `${import.meta.env.VITE_API_URL}/categoria/todos`,
-                    {},
-                    {
-                        headers: {
-                            'Authorization': `Bearer ${accessToken}`,
-                            'Content-Type': 'application/json'
-                        }
-                    }
-                );
-                setCategorias(response.data.data);
-            } catch (error) {
-                handleErrorWithContext(error);
-            }
-        };
-        fetchCategorias();
-    }, [handleErrorWithContext, isAuthenticated, accessToken]);
+	const { categorias } = useCategorias();
 
 	const validateField = (fieldValue: string, fieldName: string) => {
 		try {
@@ -109,6 +76,7 @@ export default function CrearProducto() {
 				}
 			);
 			setProducto("");
+			setMarca("");
 			setModelo("");
 			setDescripcion("");
 			setSelectedCategoria("");
