@@ -105,6 +105,7 @@ export default function ConsultaInventario() {
     const [nroSerie, setNroSerie] = useState('');
     const [inventario, setInventario] = useState<InventarioItem[]>([]);
     const [loading, setLoading] = useState(false);
+    const [exportLoading, setExportLoading] = useState(false);
     
     // Estados de paginación
     const [pagination, setPagination] = useState<PaginationInfo>({
@@ -245,7 +246,7 @@ export default function ConsultaInventario() {
             return;
         }
         
-        setLoading(true);
+        setExportLoading(true);
         
         try {
             // Construir el mismo filtro que se usa en la búsqueda
@@ -396,7 +397,7 @@ export default function ConsultaInventario() {
             console.error('Error al exportar:', error);
             showErrorToast('Error al exportar los datos. Intente nuevamente.');
         } finally {
-            setLoading(false);
+            setExportLoading(false);
         }
     };
 
@@ -556,19 +557,27 @@ export default function ConsultaInventario() {
                             type="button"
                             onClick={handleExport}
                             className="flex justify-center ml-5 mt-5 items-center bg-green-600 hover:bg-red-600 shadow-red-600/50 text-white focus:outline-none focus:ring py-2 w-60 rounded-full shadow-xl hover:shadow-blue-800/50 transition delay-10 duration-300 ease-in-out hover:translate-y-1"
-                            disabled={loading}
+                            disabled={loading || exportLoading}
                         >
                             <IonIcon icon={downloadOutline} className="w-5 h-5" />
-                            <p className="ml-1 text-lg">Exportar</p>
+                            <p className="ml-1 text-lg">{exportLoading ? 'Exportando...' : 'Exportar'}</p>
                         </button>
                     </div>
                 </form>
                 
-                {/* Indicador de carga */}
+                {/* Indicador de carga para búsqueda */}
                 {loading && (
                     <div className="flex flex-col justify-center items-center my-8">
                         <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-blue-900"></div>
                         <p className="mt-2 text-gray-600">Cargando inventario...</p>
+                    </div>
+                )}
+                
+                {/* Indicador de carga para exportación */}
+                {exportLoading && (
+                    <div className="flex flex-col justify-center items-center my-8">
+                        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-green-600"></div>
+                        <p className="mt-2 text-gray-600">Exportando datos... Por favor espera.</p>
                     </div>
                 )}
                 
