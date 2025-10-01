@@ -2,6 +2,8 @@
 export { useCategorias, type Categoria } from './useCategorias';
 export { useProveedores, type Proveedor } from './useProveedores';
 export { useCentrosCosto, type CentroCosto } from './useCentrosCosto';
+export { useDependencias, type Dependencia } from './useDependencias';
+
 export { 
     useInventarioEstadisticas, 
     type EstadisticasInventario, 

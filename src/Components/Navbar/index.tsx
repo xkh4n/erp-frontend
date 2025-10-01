@@ -61,6 +61,25 @@ export default function Navbar() {
                         { label: 'Suspender Cuenta', link: '/suspendercuentascorreo'},
                     ] },
                 ] },
+                { label: 'Comunicaciones', link: '#', menuItems: [
+                    { label: 'Accesos', link: '#', menuItems: [
+                                { label: 'Acceso Sala', link: '#', menuItems: [
+                                    { label: 'Solicitar', link: '/sala_acceso' },
+                                    { label: 'Aprobar', link: '/sala_aprueba'},
+                                    { label: 'Registrar', link: '/sala_registrar'},
+                                ]},
+                                { label: 'WiFi', link: '#', menuItems: [
+                                    { label: 'Solicitar', link: '/wifi_acceso' },
+                                    { label: 'Aprobar', link: '/wifi_aprueba'},
+                                    { label: 'Registrar', link: '/wifi_registrar'},
+                                ]}
+                            ] },
+                            { label: 'Cuentas NT', link: '#', menuItems: [
+                                { label: 'Crear Cuenta', link: '/crearcuentasnt'},
+                                { label: 'Desbloquear Cuenta', link: '/desbloquearcuentasnt' },
+                                { label: 'Suspender Cuenta', link: '/suspendercuentasnt'},
+                            ] },
+                ] },
                 { label: 'Funcional', link: '#' , menuItems: [
                     {label: 'Pantalla', link: '#', menuItems: [
                         { label: 'Crear Pantalla', link: '/crearpantalla' },

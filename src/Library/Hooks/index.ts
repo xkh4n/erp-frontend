@@ -16,3 +16,5 @@ export { default as useAuthDefault } from './useAuth';
 export { default as useCategoriasDefault } from './Models/useCategorias';
 export { default as useProveedoresDefault } from './Models/useProveedores';
 export { default as useCentrosCostoDefault } from './Models/useCentrosCosto';
+export { default as useDependenciasDefault } from './Models/useDependencias';
+export { default as useAccesosSalas } from './Models/useAccesosSalas';
