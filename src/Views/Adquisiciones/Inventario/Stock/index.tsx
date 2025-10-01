@@ -1,12 +1,14 @@
-import { Toast/*, showApprovalToast, showRejectionToast, showErrorToast, showInfoToast*/ } from '../../../../Components/Toast';
+import { Toast, showInfoToast, showErrorToast } from '../../../../Components/Toast';
 import { useState, useCallback, useEffect } from 'react';
-import { searchCircleOutline } from "ionicons/icons";
+import { searchCircleOutline, downloadOutline } from "ionicons/icons";
 import { IonIcon } from "@ionic/react";
 import { useNavigate, useLocation } from "react-router-dom";
 import axios from 'axios';
 import { useAuth } from "../../../../Library/Context/AuthContext";
 import { handleError } from "../../../../Library/Utils/errorHandler";
 import { useCategorias, useProveedores, useCentrosCosto } from "../../../../Library/Hooks/Models";
+import Pagination from "../../../../Components/Pagination";
+import Papa from 'papaparse';
 
 
 type Producto = {
@@ -71,6 +73,17 @@ interface FiltroInventario {
     usuarioId?: string;
     categoriaId?: string;
     todos?: boolean;
+    page?: number;
+    limit?: number;
+}
+
+interface PaginationInfo {
+    total: number;
+    totalPages: number;
+    currentPage: number;
+    hasNext: boolean;
+    hasPrev: boolean;
+    itemsPerPage: number;
 }
 
 export default function ConsultaInventario() {
@@ -92,6 +105,16 @@ export default function ConsultaInventario() {
     const [nroSerie, setNroSerie] = useState('');
     const [inventario, setInventario] = useState<InventarioItem[]>([]);
     const [loading, setLoading] = useState(false);
+    
+    // Estados de paginación
+    const [pagination, setPagination] = useState<PaginationInfo>({
+        total: 0,
+        totalPages: 0,
+        currentPage: 1,
+        hasNext: false,
+        hasPrev: false,
+        itemsPerPage: 10
+    });
 
     const { accessToken, isAuthenticated } = useAuth();
 
@@ -130,11 +153,14 @@ export default function ConsultaInventario() {
     };
 
 
-    const handlerSubmit = useCallback(async () => {
+    const handlerSubmit = useCallback(async (page: number = 1, itemsPerPage: number = pagination.itemsPerPage) => {
         setLoading(true);
         try {
             // Construimos el cuerpo de la petición con los filtros seleccionados
-            const body: FiltroInventario = {};
+            const body: FiltroInventario = {
+                page,
+                limit: itemsPerPage
+            };
             
             // Añadimos los filtros solo si están seleccionados
             if (selectedCentroCosto) {
@@ -184,14 +210,195 @@ export default function ConsultaInventario() {
             
             // Guardamos los resultados en el estado
             setInventario(response.data.data || []);
+            
+            // Actualizamos la información de paginación
+            if (response.data.pagination) {
+                setPagination(response.data.pagination);
+            }
         } catch (error) {
             handleErrorWithContext(error);
             console.error('Error al cargar inventario:', error);
         } finally {
             setLoading(false);
         }
-    }, [selectedCentroCosto, centrosCostos, selectedProveedor, proveedores, selectedProducto, productos, nroSerie, selectedCategoria, categorias, accessToken, handleErrorWithContext]);
+    }, [selectedCentroCosto, centrosCostos, selectedProveedor, proveedores, selectedProducto, productos, nroSerie, selectedCategoria, categorias, accessToken, handleErrorWithContext, pagination.itemsPerPage]);
 
+    // Función para manejar búsqueda (reinicia a página 1)
+    const handleSearch = () => {
+        handlerSubmit(1, pagination.itemsPerPage);
+    };
+
+    // Función para cambiar página
+    const handlePageChange = (page: number) => {
+        handlerSubmit(page, pagination.itemsPerPage);
+    };
+
+    // Función para cambiar elementos por página
+    const handleItemsPerPageChange = (itemsPerPage: number) => {
+        handlerSubmit(1, itemsPerPage);
+    };
+
+    const handleExport = async () => {
+        // Verificar si hay datos para exportar
+        if (pagination.total === 0) {
+            showInfoToast('No hay datos para exportar.');
+            return;
+        }
+        
+        setLoading(true);
+        
+        try {
+            // Construir el mismo filtro que se usa en la búsqueda
+            const baseBody: FiltroInventario = {};
+            
+            // Añadimos los filtros solo si están seleccionados (igual que en handlerSubmit)
+            if (selectedCentroCosto) {
+                const centroCosto = centrosCostos.find(cc => cc.nombre === selectedCentroCosto);
+                if (centroCosto) baseBody.centroCosto = centroCosto._id;
+            }
+            
+            if (selectedProveedor) {
+                const proveedor = proveedores.find(p => p.razonSocial === selectedProveedor);
+                if (proveedor) baseBody.proveedorId = proveedor._id;
+            }
+            
+            if (selectedProducto) {
+                const producto = productos.find(p => p.nombre === selectedProducto);
+                if (producto) baseBody.productoId = producto._id;
+            }
+            
+            if (nroSerie) {
+                baseBody.numeroSerie = nroSerie;
+            }
+
+            if (selectedCategoria) {
+                const categoria = categorias.find(c => c.codigo === selectedCategoria);
+                if (categoria) {
+                    baseBody.categoriaId = categoria._id;
+                }
+            }
+            
+            // Si no hay ningún filtro seleccionado, traemos todos los registros
+            if (!selectedCentroCosto && !selectedProveedor && !selectedProducto && !nroSerie && !selectedCategoria) {
+                baseBody.todos = true;
+            }
+            
+            // Obtener todos los datos haciendo loop por todas las páginas
+            let allInventario: InventarioItem[] = [];
+            let currentPage = 1;
+            let hasMorePages = true;
+            const itemsPerPage = 100; // Usar páginas más grandes para eficiencia
+            
+            
+            while (hasMorePages) {
+                const body = {
+                    ...baseBody,
+                    page: currentPage,
+                    limit: itemsPerPage
+                };
+                
+                
+                const response = await axios.post(
+                    `${import.meta.env.VITE_API_URL}/inventario/filtrar`,
+                    body,
+                    {
+                        headers: {
+                            'Authorization': `Bearer ${accessToken}`,
+                            'Content-Type': 'application/json'
+                        }
+                    }
+                );
+                
+                const pageData = response.data.data || [];
+                allInventario = [...allInventario, ...pageData];
+                
+                // Verificar si hay más páginas
+                const paginationInfo = response.data.pagination;
+                hasMorePages = paginationInfo?.hasNext || false;
+                currentPage++;
+                
+                // Seguridad: evitar loops infinitos
+                if (currentPage > 1000) {
+                    console.warn('Se alcanzó el límite de páginas (1000). Deteniendo exportación.');
+                    break;
+                }
+            }
+            
+            
+            if (allInventario.length === 0) {
+                showInfoToast('No hay datos para exportar.');
+                return;
+            }
+            
+            // Preparar los datos para exportación usando TODOS los registros
+            const dataToExport = allInventario.map((item: InventarioItem, index: number) => {
+                const producto = typeof item.producto === 'object' ? item.producto : null;
+                const proveedor = typeof item.proveedor === 'object' ? item.proveedor : null;
+                const centroCosto = typeof item.centroCosto === 'object' ? item.centroCosto : null;
+                const status = typeof item.status === 'object' ? item.status : null;
+                
+                return {
+                    'N°': index + 1,
+                    'Código Inventario': item.inventoryCode || '—',
+                    'Producto': producto?.nombre || '—',
+                    'Modelo': producto?.modelo || '—',
+                    'Marca': producto?.marca || '—',
+                    'Descripción': producto?.descripcion || '—',
+                    'Nro de Serie': item.serialNumber || '—',
+                    'Centro de Costo': item.location || '—',
+                    'Código Centro': centroCosto?.codigo || '—',
+                    'Proveedor': proveedor?.razonSocial || '—',
+                    'RUT Proveedor': proveedor?.rut || '—',
+                    'Teléfono Proveedor': proveedor?.telefono || '—',
+                    'Estado': status?.nombre || '—',
+                    'Código Estado': status?.codigoestado || '—',
+                    'Nro Solicitud': "'" + item.nroSolicitud?.toString() || '—',
+                    'Número Documento': item.numeroDocumento || '—',
+                    'Tipo Documento': item.tipoDocumento || '—',
+                    'Valor': item.value ? `$${item.value.toLocaleString()}` : '—',
+                    'Fecha Vencimiento': item.expirationDate ? new Date(item.expirationDate).toLocaleDateString('es-CL') : '—',
+                    'Tipo Validez': item.validityType || '—',
+                    'Valor Validez': item.validityValue || '—',
+                    'Fecha Creación': item.createdAt ? new Date(item.createdAt).toLocaleDateString('es-CL') : '—',
+                    'Fecha Actualización': item.updatedAt ? new Date(item.updatedAt).toLocaleDateString('es-CL') : '—',
+                    'Activo': item.isActive ? 'Sí' : 'No'
+                };
+            });
+            
+            // Generar nombre del archivo con fecha y hora actual
+            const now = new Date();
+            const fecha = now.toLocaleDateString('es-CL').replace(/\//g, '-');
+            const hora = now.toLocaleTimeString('es-CL', { hour12: false }).replace(/:/g, '-');
+            const fileName = `inventario_${fecha}_${hora}.csv`;
+            
+            // Convertir a CSV usando PapaParse
+            const csv = Papa.unparse(dataToExport, {
+                delimiter: ';', // Usar punto y coma como separador para mejor compatibilidad con Excel en español
+                header: true
+            });
+            
+            // Crear y descargar el archivo
+            const blob = new Blob(['\uFEFF' + csv], { type: 'text/csv;charset=utf-8;' }); // \uFEFF es BOM para UTF-8
+            const link = document.createElement('a');
+            const url = URL.createObjectURL(blob);
+            
+            link.setAttribute('href', url);
+            link.setAttribute('download', fileName);
+            link.style.visibility = 'hidden';
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+            URL.revokeObjectURL(url);
+            
+            showInfoToast(`Archivo exportado exitosamente: ${fileName} (${allInventario.length} registros)`);
+            
+        } catch (error) {
+            console.error('Error al exportar:', error);
+            showErrorToast('Error al exportar los datos. Intente nuevamente.');
+        } finally {
+            setLoading(false);
+        }
+    };
 
     // Efecto para leer query parameters y aplicar filtros automáticamente
     useEffect(() => {
@@ -206,11 +413,11 @@ export default function ConsultaInventario() {
                 
                 // Auto-ejecutar búsqueda con el filtro aplicado
                 setTimeout(() => {
-                    handlerSubmit();
+                    handlerSubmit(1, pagination.itemsPerPage);
                 }, 500); // Pequeño delay para asegurar que los datos estén cargados
             }
         }
-    }, [location.search, categorias, handlerSubmit]); // Se ejecuta cuando cambian los query params o las categorías
+    }, [location.search, categorias, handlerSubmit, pagination.itemsPerPage]); // Se ejecuta cuando cambian los query params o las categorías
 
     
     return (
@@ -338,74 +545,107 @@ export default function ConsultaInventario() {
                     <div className="flex flex-1 row-auto  justify-center">
                         <button
                             type="button"
-                            onClick={handlerSubmit}
+                            onClick={handleSearch}
                             className="flex justify-center mt-5 items-center bg-blue-950 hover:bg-red-600 shadow-red-600/50 text-white focus:outline-none focus:ring py-2 w-60 rounded-full shadow-xl hover:shadow-blue-800/50 transition delay-10 duration-300 ease-in-out hover:translate-y-1"
+                            disabled={loading}
                         >
                             <IonIcon icon={searchCircleOutline} className="w-5 h-5" />
                             <p className="ml-1 text-lg">Buscar</p>
+                        </button>
+                        <button
+                            type="button"
+                            onClick={handleExport}
+                            className="flex justify-center ml-5 mt-5 items-center bg-green-600 hover:bg-red-600 shadow-red-600/50 text-white focus:outline-none focus:ring py-2 w-60 rounded-full shadow-xl hover:shadow-blue-800/50 transition delay-10 duration-300 ease-in-out hover:translate-y-1"
+                            disabled={loading}
+                        >
+                            <IonIcon icon={downloadOutline} className="w-5 h-5" />
+                            <p className="ml-1 text-lg">Exportar</p>
                         </button>
                     </div>
                 </form>
                 
                 {/* Indicador de carga */}
                 {loading && (
-                    <div className="flex justify-center my-8">
+                    <div className="flex flex-col justify-center items-center my-8">
                         <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-blue-900"></div>
+                        <p className="mt-2 text-gray-600">Cargando inventario...</p>
                     </div>
                 )}
                 
+                {/* Información de resultados */}
+                {!loading && pagination.total > 0 && (
+                    <div className="mt-6 mb-2">
+                        <p className="text-sm text-gray-600">
+                            Se encontraron <span className="font-semibold text-blue-900">{pagination.total}</span> registros en total
+                        </p>
+                    </div>
+                )}
+
                 {/* Tabla de resultados del inventario */}
                 {!loading && inventario.length > 0 && (
-                    <div className="mt-8 overflow-x-auto bg-white rounded-lg shadow-md">
-                        <table className="min-w-full divide-y divide-gray-200">
-                            <thead className="bg-blue-950 text-white">
-                                <tr>
-                                    <th className="px-3 py-3 text-left text-xs font-medium uppercase tracking-wider">Producto</th>
-                                    <th className="px-3 py-3 text-left text-xs font-medium uppercase tracking-wider">Serie</th>
-                                    <th className="px-3 py-3 text-left text-xs font-medium uppercase tracking-wider">Centro de Costo</th>
-                                    <th className="px-3 py-3 text-left text-xs font-medium uppercase tracking-wider">Proveedor</th>
-                                    <th className="px-3 py-3 text-left text-xs font-medium uppercase tracking-wider">Modelo</th>
-                                    <th className="px-3 py-3 text-left text-xs font-medium uppercase tracking-wider">Estado</th>
-                                    <th className="px-3 py-3 text-left text-xs font-medium uppercase tracking-wider">Valor</th>
-                                    <th className="px-3 py-3 text-left text-xs font-medium uppercase tracking-wider">Fecha</th>
-                                </tr>
-                            </thead>
-                            <tbody className="bg-white divide-y divide-gray-200">
-                                {inventario.map((item) => (
-                                    <tr key={item._id} className="hover:bg-gray-50">
-                                        <td className="px-3 py-2 whitespace-nowrap text-sm text-gray-900">
-                                            {typeof item.producto === 'object' ? item.producto.nombre : '—'}
-                                        </td>
-                                        <td className="px-3 py-2 whitespace-nowrap text-sm text-gray-900">
-                                            {item.serialNumber || '—'}
-                                        </td>
-                                        <td className="px-3 py-2 whitespace-nowrap text-sm text-gray-900">
-                                            {item.location || '—'}
-                                        </td>
-                                        <td className="px-3 py-2 whitespace-nowrap text-sm text-gray-900">
-                                            {typeof item.proveedor === 'object' ? item.proveedor.razonSocial : '—'}
-                                        </td>
-                                        <td className="px-3 py-2 whitespace-nowrap text-sm text-gray-900">
-                                            {typeof item.producto === 'object' ? item.producto.modelo : '—'}
-                                        </td>
-                                        <td className="px-3 py-2 whitespace-nowrap text-sm text-gray-900">
-                                            {typeof item.status === 'object' ? item.status.nombre : '—'}
-                                        </td>
-                                        <td className="px-3 py-2 whitespace-nowrap text-sm text-gray-900">
-                                            {item.value ? `$${item.value.toLocaleString()}` : '—'}
-                                        </td>
-                                        <td className="px-3 py-2 whitespace-nowrap text-sm text-gray-900">
-                                            {item.createdAt ? new Date(item.createdAt).toLocaleDateString() : '—'}
-                                        </td>
+                    <div className="mt-2 bg-white rounded-lg shadow-md">
+                        <div className="overflow-x-auto">
+                            <table className="min-w-full divide-y divide-gray-200">
+                                <thead className="bg-blue-950 text-white">
+                                    <tr>
+                                        <th className="px-3 py-3 text-left text-xs font-medium uppercase tracking-wider">Producto</th>
+                                        <th className="px-3 py-3 text-left text-xs font-medium uppercase tracking-wider">Serie</th>
+                                        <th className="px-3 py-3 text-left text-xs font-medium uppercase tracking-wider">Centro de Costo</th>
+                                        <th className="px-3 py-3 text-left text-xs font-medium uppercase tracking-wider">Proveedor</th>
+                                        <th className="px-3 py-3 text-left text-xs font-medium uppercase tracking-wider">Modelo</th>
+                                        <th className="px-3 py-3 text-left text-xs font-medium uppercase tracking-wider">Estado</th>
+                                        <th className="px-3 py-3 text-left text-xs font-medium uppercase tracking-wider">Valor</th>
+                                        <th className="px-3 py-3 text-left text-xs font-medium uppercase tracking-wider">Fecha</th>
                                     </tr>
-                                ))}
-                            </tbody>
-                        </table>
+                                </thead>
+                                <tbody className="bg-white divide-y divide-gray-200">
+                                    {inventario.map((item) => (
+                                        <tr key={item._id} className="hover:bg-gray-50">
+                                            <td className="px-3 py-2 whitespace-nowrap text-sm text-gray-900">
+                                                {typeof item.producto === 'object' ? item.producto.nombre : '—'}
+                                            </td>
+                                            <td className="px-3 py-2 whitespace-nowrap text-sm text-gray-900">
+                                                {item.serialNumber || '—'}
+                                            </td>
+                                            <td className="px-3 py-2 whitespace-nowrap text-sm text-gray-900">
+                                                {item.location || '—'}
+                                            </td>
+                                            <td className="px-3 py-2 whitespace-nowrap text-sm text-gray-900">
+                                                {typeof item.proveedor === 'object' ? item.proveedor.razonSocial : '—'}
+                                            </td>
+                                            <td className="px-3 py-2 whitespace-nowrap text-sm text-gray-900">
+                                                {typeof item.producto === 'object' ? item.producto.modelo : '—'}
+                                            </td>
+                                            <td className="px-3 py-2 whitespace-nowrap text-sm text-gray-900">
+                                                {typeof item.status === 'object' ? item.status.nombre : '—'}
+                                            </td>
+                                            <td className="px-3 py-2 whitespace-nowrap text-sm text-gray-900">
+                                                {item.value ? `$${item.value.toLocaleString()}` : '—'}
+                                            </td>
+                                            <td className="px-3 py-2 whitespace-nowrap text-sm text-gray-900">
+                                                {item.createdAt ? new Date(item.createdAt).toLocaleDateString() : '—'}
+                                            </td>
+                                        </tr>
+                                    ))}
+                                </tbody>
+                            </table>
+                        </div>
+                        
+                        {/* Componente de paginación */}
+                        <Pagination
+                            currentPage={pagination.currentPage}
+                            totalPages={pagination.totalPages}
+                            total={pagination.total}
+                            itemsPerPage={pagination.itemsPerPage}
+                            onPageChange={handlePageChange}
+                            onItemsPerPageChange={handleItemsPerPageChange}
+                            loading={loading}
+                        />
                     </div>
                 )}
                 
                 {/* Mensaje cuando no hay resultados */}
-                {!loading && inventario.length === 0 && (
+                {!loading && inventario.length === 0 && pagination.total === 0 && (
                     <div className="mt-8 p-6 bg-white rounded-lg shadow-md text-center">
                         <p className="text-gray-500">No se encontraron resultados. Intenta con otros criterios de búsqueda.</p>
                     </div>
