@@ -22,6 +22,8 @@ import ProtectedRoute from "../Components/ProtectedRoute";
 import LoginGuard from "../Components/LoginGuard";
 import IngresoInventario from "../Views/Adquisiciones/Inventario/Ingresos";
 import ConsultaInventario from "../Views/Adquisiciones/Inventario/Stock";
+import SolicitarAcceso from "../Views/Comunicaciones/Accesos/Solicitar";
+import AprobarAcceso from "../Views/Comunicaciones/Accesos/Aprobar";
 
 export default function index() {
     return (
@@ -51,6 +53,16 @@ export default function index() {
                     <Route path="/asignarpantalla" element={
                         <ProtectedRoute>
                             <AsignarPantalla />
+                        </ProtectedRoute>
+                    } />
+                    <Route path="/sala_acceso" element={
+                        <ProtectedRoute>
+                            <SolicitarAcceso />
+                        </ProtectedRoute>
+                    } />
+                    <Route path="/sala_aprueba" element={
+                        <ProtectedRoute>
+                            <AprobarAcceso />
                         </ProtectedRoute>
                     } />
                     <Route path="/crearpantalla" element={
